@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-  "lint": "eslint . --ext .ts",
-  "lint:fix": "eslint . --ext .ts --fix"
-},
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",

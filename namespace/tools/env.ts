@@ -7,9 +7,9 @@ type EnvVars = {
   PASS: string;
 };
 
-
-const ENV = process.env.PLAYWRIGHT_ENV || 'QA'; // defecto QA
+const ENV = process.env.PLAYWRIGHT_ENV || 'QA'; // Por defecto QA
 const envFile = path.resolve(process.cwd(), `.env.${ENV.toLowerCase()}`);
+
 
 dotenv.config({ path: envFile });
 
