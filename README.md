@@ -150,7 +150,6 @@ Este ejemplo muestra cómo una prueba sencilla de login utiliza la arquitectura 
 #### 🧩 2. Helper de página (POM)
 - Representa una página completa o una vista funcional.
 - **No repite lógica de bajo nivel**, sino que **utiliza los helpers de componentes** para mantener la capa limpia.
-- Define métodos con el mismo nombre visible en la web:  
 
   ```typescript
 
