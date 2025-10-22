@@ -15,7 +15,7 @@ export enum MenuOptions {
 
   export class Menu {
     private page: Page;
-    private menuElement: Locator;
+    private readonly menuElement: Locator;
 
     constructor(page: Page) {
       this.page = page;
