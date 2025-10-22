@@ -14,8 +14,8 @@ export enum MenuOptions {
 }
 
   export class Menu {
-    private page: Page;
-    private menuElement: Locator;
+    private readonly page: Page;
+    private readonly menuElement: Locator;
 
     constructor(page: Page) {
       this.page = page;
@@ -36,7 +36,7 @@ export enum MenuOptions {
 
     // TODO: Deberia cambiar el menu si es logado o no. de momento asi
     for (const text of navItemTexts) {
-        await expect(menuOptionsValues).toContain(await tt.cleanText(text))
+        expect(menuOptionsValues).toContain(await tt.cleanText(text))
       
     }
   }
