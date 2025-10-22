@@ -145,7 +145,18 @@ Este ejemplo muestra cómo una prueba sencilla de login en `www.demoblaze.com` u
 - Contiene la lógica de interacción con **elementos** de la web (botones, inputs, selectores, modales, tooltips, etc.).
 - Se encarga de las esperas (`await expect(...)`), selectores y validaciones específicas de ese componente.
 
-(En desarrollo, de momento la logica está escrita en los Helper de Página para que la suite sea funcional)
+  ```typescript
+
+	export class TextBoxHelper {
+	  constructor(private page: Page, public selectors: { username: string; password: string }) {}
+	
+	  async fillUser(value: string) {
+	    await this.page.locator(this.selectors.username).fill(value);
+	  }
+	
+	  async fillPassword(value: string) {
+	    await this.page.locator(this.selectors.password).fill(value);
+  }
 
 #### 🧩 2. Helper de página (POM)
 - Representa una página completa o una vista funcional.
@@ -153,22 +164,26 @@ Este ejemplo muestra cómo una prueba sencilla de login en `www.demoblaze.com` u
 
   ```typescript
 
-	public async doLogin(user: string, pass:string, success : boolean =true): Promise<void> {
-		const loginModal = this.page.locator('#logInModal');
-	
-	    const usernameField = this.page.locator('#loginusername');
-	    const passwordField = this.page.locator('#loginpassword');
-	
-	    await expect(usernameField).toBeVisible();
-	    await expect(passwordField).toBeVisible();
-	
-	    await usernameField.fill(user); 
-	    await passwordField.fill(pass);
-	
-	    if (success) {
-	      await loginModal.locator('button',{ hasText: 'Log in' }).click();
-		}
-	}
+	async doLogin(user: string, pass: string, success: boolean) {
+    
+    const textBox = new TextBoxHelper(this.page, {
+      username: '#loginusername',
+      password: '#loginpassword',
+    });
+
+    const button = new ButtonHelper(this.page);
+    const modal = new ModalHelper(this.page, '#logInModal');
+   
+    textBox.fillUser(user);
+    textBox.fillPassword(pass);
+    button.press('login');
+    
+    if (success) {
+      modal.validateMessage('Success');
+    } else {
+      modal.validateMessage('Invalid credentials');
+    }
+  }
 
 #### 🧪 3. Prueba 
 - El test es **declarativo**, solo indica *qué* se valida, no *cómo*.
