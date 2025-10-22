@@ -156,7 +156,7 @@ Este ejemplo muestra cómo una prueba sencilla de login en `www.demoblaze.com` u
 	
 	  async fillPassword(value: string) {
 	    await this.page.locator(this.selectors.password).fill(value);
-  }
+    }
 
 #### 🧩 2. Helper de página (POM)
 - Representa una página completa o una vista funcional.
@@ -192,7 +192,7 @@ Este ejemplo muestra cómo una prueba sencilla de login en `www.demoblaze.com` u
 
   test('should fail login with invalid credentials', async ({ page }) => { 
     const login = new Login(page);
-    await login.doLogin("login", "KO", false);
+    login.doLogin("login", "KO", false);
   });
 
 ####  🥒 4. Escenario BDD (Cucumber)
