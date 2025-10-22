@@ -8,6 +8,7 @@
 
 Proyecto personal para **experimentar** con **Playwright + TypeScript**, con el objetivo de replicar la flexibilidad lograda previamente con Selenium, y explorar nuevas posibilidades en testing moderno orientado a mantenibilidad, paralelización y trazabilidad, incorporando además un enfoque experimental con **inteligencia artificial** para optimizar la generación, análisis y priorización de pruebas. (en proceso)
 
+[![Playwright Tests](https://github.com/rubenlopez77/Playwright_fun/actions/workflows/playwright.yml/badge.svg)](https://github.com/rubenlopez77/Playwright_fun/actions/workflows/playwright.yml)
 ---
 
 🚀 Objetivo
