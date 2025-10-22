@@ -143,7 +143,7 @@ Este ejemplo muestra cómo una prueba sencilla de login en `www.demoblaze.com` u
 
 #### 🧩 1. Helper de componente
 - Contiene la lógica de interacción con **elementos** de la web (botones, inputs, selectores, modales, tooltips, etc.).
-- Se encarga de las esperas (`await expect(...)`), selectores y validaciones específicas de ese componente.
+- Se encarga de las esperas `await expect(...)`, selectores y validaciones específicas de ese componente. `Single level of abstraction per layer`
 
   ```typescript
 
@@ -164,7 +164,7 @@ Este ejemplo muestra cómo una prueba sencilla de login en `www.demoblaze.com` u
 
   ```typescript
 
-	async doLogin(user: string, pass: string, success: boolean) {
+	async doLogin(user: string, pass: string) {
     
     const textBox = new TextBoxHelper(this.page, {
       username: '#loginusername',
@@ -172,17 +172,11 @@ Este ejemplo muestra cómo una prueba sencilla de login en `www.demoblaze.com` u
     });
 
     const button = new ButtonHelper(this.page);
-    const modal = new ModalHelper(this.page, '#logInModal');
    
     textBox.fillUser(user);
     textBox.fillPassword(pass);
     button.press('login');
     
-    if (success) {
-      modal.validateMessage('Success');
-    } else {
-      modal.validateMessage('Invalid credentials');
-    }
   }
 
 #### 🧪 3. Prueba 
@@ -190,10 +184,9 @@ Este ejemplo muestra cómo una prueba sencilla de login en `www.demoblaze.com` u
 
   ```typescript
 
-  test('should fail login with invalid credentials', async ({ page }) => { 
-    const login = new Login(page);
-    login.doLogin("login", "KO", false);
-  });
+  When('I enter invalid credentials', async function () {
+   login.doLogin('login', 'KO');
+});
 
 ####  🥒 4. Escenario BDD (Cucumber)
 El nivel más alto de abstracción: describe el comportamiento del usuario en lenguaje natural, sin código técnico
