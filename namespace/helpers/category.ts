@@ -8,18 +8,17 @@ export enum Category {
 }
 
 export class Categories {
-  private page: Page;
-  private catElement: Locator;
-  private items: Locator;
+  private readonly page: Page;
+  private readonly catElement: Locator;
+  private readonly  items: Locator;
 
   constructor(page: Page) {
     this.page = page;
     this.catElement = this.page.locator('.list-group');
     this.items = this.catElement.locator('.list-group-item');
+ 
   
-  } 
-
-
+  }
   public async goCategory(cat: Category): Promise<void> {
 
     await this.catElement.locator(`:has-text("${cat}")`).click();

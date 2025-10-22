@@ -3,7 +3,7 @@ import { Menu, MenuOptions } from '../helpers/menu';
 
 
 export class User {
-  private page: Page;
+  private readonly page: Page;
 
   constructor(page: Page) {
     this.page = page;
@@ -23,7 +23,7 @@ export class User {
     const menu = new Menu(this.page);
     await menu.goMenu(MenuOptions.Login);
     
-    const loginModal = await this.page.locator('#logInModal');
+    const loginModal = this.page.locator('#logInModal');
 
     const usernameField = this.page.locator('#loginusername');
     const passwordField = this.page.locator('#loginpassword');
@@ -34,13 +34,13 @@ export class User {
     await usernameField.fill(user);
     await passwordField.fill(pass);
 
-    if (success){
+    if (success) {
       await loginModal.locator('button', { hasText: 'Log in' }).click();
     
 
-   // await expect(loginModal.locator('#logInModal')).toBeVisible(); 
+   //await expect(loginModal.locator('#logInModal')).toBeVisible(); 
 
-    const userElement = await this.page.locator('#nameofuser');
+    const userElement = this.page.locator('#nameofuser');
     await expect(userElement).toHaveText(`Welcome ${user}`, {});
 
     } else {
@@ -62,15 +62,17 @@ export class User {
     /// <summary>
     /// Inicia el Login pero lo cancela, el modal debe cerrarse 
     /// </summary>
+
+    
     public async doLoginCancel(): Promise<void> {{
       
-      const menu = new Menu(this.page);
-      await menu.goMenu(MenuOptions.Login);
-
-      const loginModal = this.page.locator('#logInModal');
-      await loginModal.locator('button.btn-secondary').click();
+      await new Menu(this.page).goMenu(MenuOptions.Login);
+      await this.page.locator('#logInModal button.btn-secondary').click();
      
     }
+
+
+    
   }
     /// <summary>
     /// Realiza el logout y verifica que el usuario no esta logado revisando si existe el usuario del menu superior. 
@@ -82,9 +84,9 @@ export class User {
 
       //await expect(await menu.isLogged()).toBeFalsy();
 
-      const cookies = await this.page.context().cookies();
-      const sessionCookie = cookies.find(cookie => cookie.name === 'user');
-      //expect(sessionCookie, 'Cookie "user" debería haber sido eliminada').toBeUndefined(); //// no borra la cookie al logout. Abro bug :P
+      //const cookies = await this.page.context().cookies();
+      //const sessionCookie = cookies.find(cookie => cookie.name === 'user');
+      //expect(sessionCookie, 'Cookie "user" debería haber sido eliminada').toBeUndefined(); //// no borra la cookie al hacer logout. Abro bug :P
     }
   }
 }

@@ -1,7 +1,7 @@
 import {  Page } from '@playwright/test';
 
 export class Home {
-     constructor(private page: Page) {}
+     constructor(private readonly page: Page) {}
 
   /// <summary>                   
   /// Navega a la home
