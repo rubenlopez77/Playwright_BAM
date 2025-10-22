@@ -1,6 +1,6 @@
-# 🧪 Playwright + Cucumber + TypeScript Automation Framework
+# 🧪 Playwright + Cucumber + TypeScript Automation Framework + IA
 
-Proyecto personal para **experimentar** con **Playwright + TypeScript**, con el objetivo de replicar la flexibilidad lograda previamente con Selenium, y explorar nuevas posibilidades en testing moderno orientado a mantenibilidad, paralelización y trazabilidad, incorporando además un enfoque experimental con **inteligencia artificial** para optimizar la generación, análisis y priorización de pruebas. 
+**PoC** Proyecto personal para **experimentar** con **Playwright + TypeScript**, con el objetivo de replicar la flexibilidad lograda previamente con Selenium, y explorar nuevas posibilidades en testing moderno orientado a mantenibilidad, paralelización y trazabilidad, incorporando además un enfoque experimental con **inteligencia artificial** para optimizar la generación, análisis y priorización de pruebas. 
 
 (En proceso...)
 
@@ -118,7 +118,7 @@ ENV=qa npx playwright test
 
 ## 🧩 Estrategia de Calidad y Mejores Prácticas
 
-- - **Page Objects:** una clase por página con acciones claras (`home()`, `login(user,pass)` etc  con el mismo nombre del botón o enlace.  “El código se lee como una historia.”
+- **Page Objects:** una clase por página con acciones claras `home()`, `login(user,pass)` etc  con el mismo nombre del botón o enlace.  “El código se lee como una historia.”
 - **Selectors:** usar siempre `data-test` o atributos específicos del DOM.  
 - **Fixtures:** inicializar datos y estados en `beforeAll` o `beforeEach`.  
 - **Tests atómicos:** cada escenario debe validar un único flujo de negocio.  
@@ -139,13 +139,13 @@ El framework sigue una **arquitectura multicapa** basada en el patrón **Page Ob
 
 Helper de componente → Helper de página (POM) → Prueba (feature / test)
 
-Este ejemplo muestra cómo una prueba sencilla de login utiliza la arquitectura propuesta, separando responsabilidades entre la prueba, el helper de página y los helpers de componentes.
+Este ejemplo muestra cómo una prueba sencilla de login en `www.demoblaze.com` utiliza la arquitectura propuesta, separando responsabilidades entre la prueba, el helper de página y los helpers de componentes.
 
 #### 🧩 1. Helper de componente
 - Contiene la lógica de interacción con **elementos** de la web (botones, inputs, selectores, modales, tooltips, etc.).
 - Se encarga de las esperas (`await expect(...)`), selectores y validaciones específicas de ese componente.
 
-(En desarrollo)
+(En desarrollo, de momento la logica está escrita en los Helper de Página para que la suite sea funcional)
 
 #### 🧩 2. Helper de página (POM)
 - Representa una página completa o una vista funcional.
