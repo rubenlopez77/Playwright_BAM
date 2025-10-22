@@ -148,24 +148,14 @@ Este ejemplo muestra cómo una prueba sencilla de login en `www.demoblaze.com` u
   ```typescript
 
 	export class TextBoxHelper {
-	  constructor(
-	    private page: Page,
-	    public selectors: { username: string; password: string }
-	  ) {}
+	constructor(private readonly page: Page, private readonly selector: string) {}
 	
-	  async fillUser(value: string) {
-	    const field = this.page.locator(this.selectors.username);
-	    await expect(field).toBeVisible();
-	    await field.fill(value);
-	  }
-	
-	  async fillPassword(value: string) {
-	    const field = this.page.locator(this.selectors.password);
-	    await expect(field).toBeVisible();
-	    await field.fill(value);
-	  }
-  }
-
+	 async fillTextBox(value: string) {
+	 const field = this.page.locator(this.selector);
+	 await expect(field).toBeVisible();
+	 await field.fill(value);
+	 }
+  	}
 
 
 #### 🧩 2. Helper de página (POM)
@@ -175,19 +165,14 @@ Este ejemplo muestra cómo una prueba sencilla de login en `www.demoblaze.com` u
   ```typescript
 
 	async doLogin(user: string, pass: string) {
-    
-    const textBox = new TextBoxHelper(this.page, {
-      username: '#loginusername',
-      password: '#loginpassword',
-    });
-
-    const button = new ButtonHelper(this.page);
-   
-    textBox.fillUser(user);
-    textBox.fillPassword(pass);
-    button.press('login');
-    
-  }
+	 const username = new TextBoxHelper(this.page, '#loginusername');
+	 const password = new TextBoxHelper(this.page, '#loginpassword');
+	 const button = new ButtonHelper(this.page);
+	
+	 username.fillTextBox(user);
+	 password.fillTextBox(pass);
+     button.press('login');
+  	}
 
 #### 🧪 3. Prueba 
 - El test es **declarativo**, solo indica *qué* se valida, no *cómo*.
