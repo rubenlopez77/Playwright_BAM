@@ -148,15 +148,25 @@ Este ejemplo muestra cómo una prueba sencilla de login en `www.demoblaze.com` u
   ```typescript
 
 	export class TextBoxHelper {
-	  constructor(private page: Page, public selectors: { username: string; password: string }) {}
+	  constructor(
+	    private page: Page,
+	    public selectors: { username: string; password: string }
+	  ) {}
 	
 	  async fillUser(value: string) {
-	    await this.page.locator(this.selectors.username).fill(value);
+	    const field = this.page.locator(this.selectors.username);
+	    await expect(field).toBeVisible();
+	    await field.fill(value);
 	  }
 	
 	  async fillPassword(value: string) {
-	    await this.page.locator(this.selectors.password).fill(value);
-    }
+	    const field = this.page.locator(this.selectors.password);
+	    await expect(field).toBeVisible();
+	    await field.fill(value);
+	  }
+  }
+
+
 
 #### 🧩 2. Helper de página (POM)
 - Representa una página completa o una vista funcional.
@@ -186,7 +196,7 @@ Este ejemplo muestra cómo una prueba sencilla de login en `www.demoblaze.com` u
 
   When('I enter invalid credentials', async function () {
    login.doLogin('login', 'KO');
-});
+   });
 
 ####  🥒 4. Escenario BDD (Cucumber)
 El nivel más alto de abstracción: describe el comportamiento del usuario en lenguaje natural, sin código técnico
