@@ -6,3 +6,6 @@
 /blob-report/
 /playwright/.auth/
 /test-results/
+
+#fun
+main.test.ts
