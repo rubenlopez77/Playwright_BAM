@@ -1,4 +1,32 @@
 {
-    "inlineChat.hideOnRequest": true,
-    "inlineChat.notebookAgent": true
+  // === Cucumber (Gherkin) Full Support ===
+  "cucumberautocomplete.steps": [
+    "tests/steps/**/*.ts"
+  ],
+  "cucumberautocomplete.syncfeatures": "tests/features/**/*.feature",
+  "cucumberautocomplete.strictGherkinCompletion": true,
+  "cucumberautocomplete.smartSnippets": true,
+  "cucumberautocomplete.onTypeFormat": true,
+  "cucumberautocomplete.gherkinDefinitionPart": "@(Given|When|Then)\\(",
+  "cucumberautocomplete.stepRegExSymbol": "\"",
+  "cucumberautocomplete.customParameters": [
+    {
+      "parameter": "{string}",
+      "value": "\"([^\"]*)\""
+    },
+    {
+      "parameter": "{int}",
+      "value": "(\\d+)"
+    }
+  ],
+  "cucumberautocomplete.uncaughtSnippetsDisabled": true,
+
+  // Opcional: mejor compatibilidad con TypeScript
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "typescript.tsserver.experimental.enableProjectDiagnostics": true,
+
+  // Opcional: coloreado Gherkin
+  "files.associations": {
+    "*.feature": "feature"
+  }
 }

@@ -1,0 +1,58 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug Cucumber (todos los features)",
+      "program": "${workspaceFolder}/node_modules/@cucumber/cucumber/bin/cucumber-js",
+      "args": [
+        "tests/features/**/*.feature",
+        "--require-module",
+        "ts-node/register",
+        "--require",
+        "tests/steps/**/*.ts",
+        "--require",
+        "support/**/*.ts",
+        "--publish-quiet"
+      ],
+      "env": {
+        "ENV": "qa",
+        "HEADLESS": "false",
+        "TRACE": "off"
+      },
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "runtimeArgs": ["--inspect"],
+      "stopOnEntry": false,
+      "skipFiles": ["<node_internals>/**", "${workspaceFolder}/node_modules/**"]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug Cucumber (@debug solamente)",
+      "program": "${workspaceFolder}/node_modules/@cucumber/cucumber/bin/cucumber-js",
+      "args": [
+        "--tags",
+        "@debug",
+        "--require-module",
+        "ts-node/register",
+        "--require",
+        "tests/steps/**/*.ts",
+        "--require",
+        "support/**/*.ts",
+        "--publish-quiet"
+      ],
+      "env": {
+        "ENV": "qa",
+        "HEADLESS": "false",
+        "TRACE": "off"
+      },
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "runtimeArgs": ["--inspect"],
+      "stopOnEntry": false,
+      "skipFiles": ["<node_internals>/**", "${workspaceFolder}/node_modules/**"]
+    }
+  ]
+}

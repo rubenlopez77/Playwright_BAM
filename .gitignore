@@ -9,3 +9,8 @@
 
 #fun
 main.test.ts
+
+#sonar
+sonar-project.properties
+#cucumber
+cucumber.tsconfig.json
