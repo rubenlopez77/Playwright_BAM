@@ -1,90 +1,73 @@
-import { logger } from '@support/logger';
-import {
-  chromium,
-  firefox,
-  webkit,
-  type Browser,
-  type BrowserContext,
-  type Page,
-  devices,
-} from '@playwright/test';
-
-
+import { chromium, firefox, webkit, Browser, BrowserContext } from '@playwright/test';
+import { logger } from './logger';
 
 export class DriverFactory {
-  private static browser: Browser | undefined;
-  private static isClosing = false;
+  private static browser: Browser | null = null;
 
-  private static async launchBrowser(): Promise<Browser> {
-    if (DriverFactory.browser) return DriverFactory.browser;
+  static async getBrowser(): Promise<Browser> {
+    if (this.browser?.isConnected()) {
+      return this.browser;
+    }
 
-    const browserName = process.env.BROWSER ?? 'chromium';
-    const headless = (process.env.HEADLESS ?? 'true') === 'true';
-    const slowMo = process.env.SLOWMO ? Number(process.env.SLOWMO) : 100;
-    logger.info(`🚀 Browser: ${browserName} | headless=${headless} | slowMo=${slowMo}`);
+    const browserName = process.env.BROWSER || 'chromium';
+    const headless = process.env.HEADLESS !== 'false';
+    const slowMo = Number(process.env.SLOWMO ?? 0);
+
+    if (process.env.LOG === 'true') {
+      logger.info(`🚀 Browser: ${browserName} | headless=${headless} | slowMo=${slowMo}`);
+    }
 
     switch (browserName) {
       case 'firefox':
-        DriverFactory.browser = await firefox.launch({ headless, slowMo });
+        this.browser = await firefox.launch({ headless, slowMo });
         break;
       case 'webkit':
-        DriverFactory.browser = await webkit.launch({ headless, slowMo });
+        this.browser = await webkit.launch({ headless, slowMo });
         break;
       default:
-        DriverFactory.browser = await chromium.launch({ headless, slowMo });
+        this.browser = await chromium.launch({ headless, slowMo });
         break;
     }
 
-    return DriverFactory.browser;
+    return this.browser;
   }
 
-  static async createContext(): Promise<{ context: BrowserContext; page: Page }> {
-    const browser = await DriverFactory.launchBrowser();
-    const context = await browser.newContext({
-      ...devices['Desktop Chrome'],
-      viewport: { width: 1920, height: 1080 },
-    });
-    const page = await context.newPage();
+  /**
+   * Crea un nuevo contexto de navegador (para cada escenario).
+   */
+  static async createContext(): Promise<BrowserContext> {
+    const browser = await this.getBrowser();
+    const context = await browser.newContext();
 
-    const id = `${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
-    logger.info(`✅ Contexto y página creados (ID: ${id}) - URL inicial: ${page.url()}`);
-    return { context, page };
-  }
-
-  // 🧩 Espera a que no se esté cerrando
-  static async safeWait(ms = 250) {
-    if (DriverFactory.isClosing) {
-      logger.info('⏳ Esperando a que termine el cierre del navegador...');
-      while (DriverFactory.isClosing) {
-        await new Promise(r => setTimeout(r, ms));
-      }
+    if (process.env.LOG === 'true') {
+      logger.info(`✅ Contexto creado (ID: ${Date.now()})`);
     }
+
+    return context;
   }
 
+  /**
+   * Cierra el navegador si está activo.
+   */
   static async closeBrowser(): Promise<void> {
-    const browser = DriverFactory.browser;
-    if (!browser) {
-      logger.info('🟡 Ningún navegador activo, nada que cerrar.');
+    if (!this.browser) {
+      if (process.env.LOG === 'true') logger.info('🟡 Ningún navegador activo, nada que cerrar.');
       return;
     }
 
-    try {
-      DriverFactory.isClosing = true;
-
-      if (typeof browser.isConnected === 'function' && !browser.isConnected()) {
-        logger.info('⚙️ El navegador ya estaba cerrado o desconectado.');
-        DriverFactory.browser = undefined;
-        DriverFactory.isClosing = false;
-        return;
+    if (this.browser.isConnected()) {
+      try {
+        await this.browser.close();
+        if (process.env.LOG === 'true') logger.info('🚪 Navegador cerrado correctamente.');
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        logger.warn(`⚠️ Error al cerrar el navegador: ${message}`);
+      } finally {
+        this.browser = null;
       }
-
-      await browser.close();
-      logger.info('🚪 Navegador cerrado correctamente.');
-      DriverFactory.browser = undefined;
-    } catch (err: any) {
-      console.warn('⚠️ Error cerrando navegador:', err.message);
-    } finally {
-      DriverFactory.isClosing = false;
+    } else {
+      if (process.env.LOG === 'true') logger.info('⚙️ El navegador ya estaba cerrado o desconectado.');
+      this.browser = null;
     }
   }
 }

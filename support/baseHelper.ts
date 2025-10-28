@@ -1,33 +1,41 @@
-import type { Page } from '@playwright/test';
+import { logger } from './logger';
 
-export abstract class BaseHelper {
-  protected readonly page: Page;
-  private static promiseChain: Promise<void> = Promise.resolve();
+export class BaseHelper {
+  protected page: any;
+  private chain: Promise<void> = Promise.resolve(); // 👈 cola interna de ejecución
 
-  constructor(page: Page) {
+  constructor(page: any) {
     this.page = page;
-
-    return new Proxy(this, {
-      get(target, prop, receiver) {
-        const value = Reflect.get(target, prop, receiver);
-        if (typeof value !== 'function') return value;
-
-        return (...args: any[]) => {
-          BaseHelper.promiseChain = BaseHelper.promiseChain
-            .then(() => value.apply(target, args))
-            .catch(err => {
-              console.error(`❌ Error en ${String(prop)}:`, err);
-              throw err;
-            });
-
-          return BaseHelper.promiseChain;
-        };
-      },
-    });
   }
 
-  /** Espera a que toda la cadena de promesas haya terminado */
-  static async waitForPendingActions() {
-    await BaseHelper.promiseChain.catch(() => {});
+  /**
+   * Ejecuta una tarea asincrónica en secuencia.
+   * Esto permite que los tests funcionen sin `await` en los steps.
+   */
+  protected run(task: () => Promise<void>, name?: string): void {
+    this.chain = this.chain
+      .then(async () => {
+        if (process.env.LOG === 'true' && name) {
+          logger.info(`▶️ Ejecutando: ${name}`);
+        }
+        await task();
+      })
+      .catch((err) => {
+        const msg = err instanceof Error ? err.message : String(err);
+        logger.error(`❌ Error en ${name || 'tarea'}: ${msg}`);
+      });
+  }
+
+  /**
+   * Espera a que todas las tareas pendientes de la cola se completen.
+   * Se usa antes de cerrar el contexto o navegador.
+   */
+  async flush(): Promise<void> {
+    try {
+      await this.chain;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      logger.warn(`⚠️ Error en flush(): ${msg}`);
+    }
   }
 }

@@ -1,53 +1,52 @@
-// tests/support/pageFactory.ts
-import * as fs from 'fs';
-import * as path from 'path';
-import type { Page } from '@playwright/test';
-
-// Un constructor de página que opcionalmente expone un método estático wrap(page)
-interface PageCtor<T = any> {
-  new (page: Page): T;
-  wrap?: (page: Page) => T; // 👈 estático opcional
-}
+import fs from 'fs';
+import path from 'path';
+import { logger } from './logger';
 
 export class PageFactory {
-  // Permite asignación dinámica (login, home, etc.)
-  [key: string]: any;
+  [key: string]: any; // 👈 permite propiedades dinámicas sin que TS proteste
 
-  private readonly page: Page;
-
-  constructor(page: Page) {
-    this.page = page;
-    this.loadPages();
-  }
-
-  private loadPages() {
-
+  constructor(private page: any) {
     const pagesDir = path.resolve(__dirname, '../helpers/pages');
 
+    if (!fs.existsSync(pagesDir)) {
+      throw new Error(`❌ No se encontró el directorio de páginas: ${pagesDir}`);
+    }
 
-    // Acepta *.page.ts y *.page.js (funciona en ts-node y en dist)
-    const files = fs.readdirSync(pagesDir).filter(f => /\.page\.(ts|js)$/.test(f));
+    const files = fs
+      .readdirSync(pagesDir)
+      .filter((f) => f.endsWith('.ts') || f.endsWith('.js'));
+
+    if (process.env.LOG === 'true') {
+      logger.info(`📦 Cargando páginas desde: ${pagesDir}`);
+    }
 
     for (const file of files) {
-      const propName = file.replace(/\.page\.(ts|js)$/, '');
-      const modPath = path.join(pagesDir, file);
+  // ⬇️ Quita primero ".page.<ext>" si existe; si no, quita solo ".<ext>"
+  const baseName =
+    file.replace(/\.page\.(ts|js)$/i, '')      // "login.page.ts" -> "login"
+        .replace(/\.(ts|js)$/i, '');           // "home.ts" -> "home"
 
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const mod = require(modPath);
+  const instanceName = baseName.toLowerCase(); // "Login" -> "login"
 
-      // Toma la primera exportación como clase de página
-      const exportedKey = Object.keys(mod)[0];
-      const PageClass = mod[exportedKey] as PageCtor;
-
-      if (typeof PageClass !== 'function') {
-        console.warn(`⚠️ No se encontró un constructor de clase en ${file}. Saltando.`);
-        continue;
-      }
-
-      // Si la clase tiene BaseHelper.wrap estático, úsalo; si no, instancia normal
-      this[propName] = typeof PageClass.wrap === 'function'
-        ? PageClass.wrap(this.page)
-        : new PageClass(this.page);
+  const filePath = path.join(pagesDir, file);
+  try {
+    const mod = require(filePath);
+    const PageClass = Object.values(mod).find(exp => typeof exp === 'function');
+    if (!PageClass) {
+      logger.warn(`⚠️ ${file} no exporta ninguna clase válida.`);
+      continue;
     }
+
+    (this as any)[instanceName] = new (PageClass as any)(this.page);
+
+    if (process.env.LOG === 'true') {
+      logger.info(`✅ Página cargada: ${instanceName} (de ${file})`);
+    }
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    logger.warn(`⚠️ No se pudo cargar ${file}: ${msg}`);
   }
 }
+  }
+}
+
