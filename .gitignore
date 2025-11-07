@@ -1,0 +1,10 @@
+/node_modules/
+/playwright-report/
+/playwright/.cache/
+
+# Playwright
+/blob-report/
+/playwright/.auth/
+/test-results/
+reports/
+backup.bundle
