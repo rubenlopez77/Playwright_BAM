@@ -1,22 +1,11 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
+    "target": "ES2022",
     "module": "commonjs",
-    "strict": true,
-    "moduleResolution": "node",
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "resolveJsonModule": true,
-    "rootDir": ".",
-    "outDir": "dist",
-    "types": ["node", "@playwright/test", "@cucumber/cucumber"],
-    "baseUrl": ".",
-    "paths": {
-      "@support/*": ["support/*"],
-      "@helpers/*": ["helpers/*"],
-      "@tests/*": ["tests/*"],
-
-    }
+    "strict": false,
+    "noEmit": true
   },
- "include": ["tests/**/*", "helpers/**/*", "support/**/*"]
+  "include": ["**/*.ts"]
 }

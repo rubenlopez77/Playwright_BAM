@@ -6,19 +6,16 @@
   "cucumberautocomplete.syncfeatures": "tests/features/**/*.feature",
   "cucumberautocomplete.strictGherkinCompletion": true,
   "cucumberautocomplete.smartSnippets": true,
+  "cucumberautocomplete.stepsInvariants": true,
+"cucumberautocomplete.customParameters": [
+  { "parameter": "{string}", "value": "\"[^\"]*\"" },
+  { "parameter": "{int}", "value": "\\d+" }
+],
+  "cucumberautocomplete.skipDocStringsFormat": true,
   "cucumberautocomplete.onTypeFormat": true,
-  "cucumberautocomplete.gherkinDefinitionPart": "@(Given|When|Then)\\(",
-  "cucumberautocomplete.stepRegExSymbol": "\"",
-  "cucumberautocomplete.customParameters": [
-    {
-      "parameter": "{string}",
-      "value": "\"([^\"]*)\""
-    },
-    {
-      "parameter": "{int}",
-      "value": "(\\d+)"
-    }
-  ],
+  "cucumberautocomplete.gherkinDefinitionPart": "(Given|When|Then)",
+  "cucumberautocomplete.gherkinAutoComplete": true,
+ 
   "cucumberautocomplete.uncaughtSnippetsDisabled": true,
 
   // Opcional: mejor compatibilidad con TypeScript
@@ -28,5 +25,9 @@
   // Opcional: coloreado Gherkin
   "files.associations": {
     "*.feature": "feature"
+  },
+  "sonarlint.connectedMode.project": {
+    "connectionId": "Local SonarQube",
+    "projectKey": "Playwright"
   }
 }

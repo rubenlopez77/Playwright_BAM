@@ -1,20 +1,65 @@
-import { logger } from './logger';
 import { setWorldConstructor } from '@cucumber/cucumber';
-import { BrowserContext, Page } from '@playwright/test';
-import { DriverFactory } from './driverFactory';
-import { PageFactory } from './pageFactory';
+import { chromium, firefox, webkit, Browser, BrowserContext, Page } from 'playwright';
+import { EnvConfig } from './env';
+import { Logger } from './logger';
 
 export class CustomWorld {
-  page!: Page;
+  browser!: Browser;
   context!: BrowserContext;
-  pages!: PageFactory;
+  page!: Page;
+  logger!: Logger;
+
+  private queue: Array<() => Promise<void>> = [];
+  private pageInstances = new Map<string, any>();
 
   async init() {
-    const { context, page } = await DriverFactory.createContext();
-    this.context = context;
-    this.page = page;
-    this.pages = new PageFactory(page);
-    logger.info(`🌍 World constructor ejecutado: CustomWorld ID ${Math.random().toString(36).slice(2, 6)}`);
+    this.logger = new Logger(EnvConfig.LOG);
+
+    const browserType =
+      EnvConfig.BROWSER === 'firefox' ? firefox : EnvConfig.BROWSER === 'webkit' ? webkit : chromium;
+
+    this.browser = await browserType.launch({ headless: EnvConfig.HEADLESS });
+    this.context = await this.browser.newContext();
+    this.page = await this.context.newPage();
+
+    if (EnvConfig.TRACE) {
+      await this.context.tracing.start({ screenshots: true, snapshots: true });
+    }
+
+    await this.page.goto(EnvConfig.BASE_URL);
+  }
+
+  enqueue(action: () => Promise<void>) {
+    this.queue.push(action);
+  }
+
+  async flush() {
+    for (const action of this.queue) {
+      try {
+        await action();
+      } catch (err) {
+        console.error('Error in queued action:', err);
+        throw err;
+      }
+    }
+    this.queue = [];
+  }
+
+  async close() {
+    try {
+      await this.flush();
+      if (EnvConfig.TRACE) await this.context.tracing.stop({ path: `trace-${Date.now()}.zip` });
+    } finally {
+      await this.browser?.close();
+    }
+  }
+
+  getPage<T>(PageClass: new (world: CustomWorld) => T): T {
+    const key = PageClass.name;
+    if (!this.pageInstances.has(key)) {
+      this.pageInstances.set(key, new PageClass(this));
+    }
+    return this.pageInstances.get(key);
   }
 }
 
