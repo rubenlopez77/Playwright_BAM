@@ -1,9 +1,3 @@
-# 🧪 Playwright + Cucumber + TypeScript Automation Framework + IA
-
-**PoC** Proyecto personal para **experimentar** con **Playwright + TypeScript**, con el objetivo de replicar la flexibilidad lograda previamente con Selenium, y explorar nuevas posibilidades en testing moderno orientado a mantenibilidad, paralelización y trazabilidad, incorporando además un enfoque experimental con **inteligencia artificial** para optimizar la generación, análisis y priorización de pruebas. 
-
-(En proceso...)
-
 # 🧪 Behavior Annotation Model (BAM) · Playwright + Cucumber + TypeScript
 
 **Versión:** 0.1.3 (PoC)  
