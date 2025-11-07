@@ -5,7 +5,7 @@ const envFile = process.env.NODE_ENV === 'production' ? '.env.pro' : '.env.qa';
 dotenv.config({ path: path.resolve(process.cwd(), envFile) });
 
 export const EnvConfig = {
-  BASE_URL: process.env.BASE_URL || 'https://www.demoblaze.com',
+  BASE_URL: process.env.BASE_URL || 'about:blank',
   LOGIN: process.env.LOGIN || 'admin',
   PASS: process.env.PASS || 'admin',
   HEADLESS: process.env.HEADLESS === 'true',
