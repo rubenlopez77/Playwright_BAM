@@ -141,7 +141,6 @@ When('the user logs in with valid credentials', function () {
 - [ ]   Generación automática de **BAMReport HTML/PDF**.  
 - [ ]   Export a Xray, TestRail o Kiwi TCMS.  
 - [ ]   Revisión automatizada de cobertura de requisitos.
-
 ---
 
 ## 👨‍💻 Autor
