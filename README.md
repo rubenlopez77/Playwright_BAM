@@ -17,13 +17,6 @@ Inspirado en principios **ISTQB 2023+**, **IEEE 29119**, **ISO 25010** y **SQuaR
 ## ¿Que es BAM (Behavior Annotation Model) ?
 La filosofía BAM  nace como una respuesta a la fragmentación existente entre frameworks de automatización que priorizan la ejecución técnica frente a la trazabilidad, la mantenibilidad y la comprensión del comportamiento.
 
- ``` ts
-When('the user logs in with valid credentials', function () {
-  const user = this.getPage(LoginPage);
-  user.loginWith(credentials.valid);
-});
- ```
-
 BAM combina la legibilidad del BDD Cucumber con la robustez de una arquitectura multicapa. Su objetivo no es sustituir los modelos existentes como POM o BDD, sino unificarlos bajo un principio fundamental: la prueba es una anotación del comportamiento, no un script imperativo.
 
 Cada test debe describir qué se valida, no cómo se ejecuta, y debe ser trazable hasta su requisito de origen.
@@ -86,9 +79,17 @@ Cumple los principios **ISTQB 2023+** e **IEEE 29119**:
 | **Hooks** | Inicialización y cierre de entorno (Before/After) integrados con Cucumber. |
 | **Logger** | Registro centralizado de acciones, errores y métricas de duración formateadas. |
 | **Components Layer** | Abstracción mínima sobre elementos UI (textbox, modal, button...). |
-| **Pages Layer POM	** | Orquestación de componentes. Define flujo de negocio. |
+| **Pages Layer POM** | Orquestación de componentes. Define flujo de negocio. |
 | **Data Layer** | Datos simulados (mocked), credenciales y datasets configurables. |
 
+
+ ``` ts
+When('the user logs in with valid credentials', function () {
+  const user = this.getPage(LoginPage);
+  user.loginWith(credentials.valid);
+});
+ ```
+ 
 **DSL Declarativo:** `user.loginWith(credentials.valid)`
 
 ✔ Arquitectura modular y determinista  
@@ -145,6 +146,6 @@ Cumple los principios **ISTQB 2023+** e **IEEE 29119**:
 
 ## 👨‍💻 Autor
 
-**Rubén López**  
-🧑‍🔬 QA Lead · Arquitectura de Automatización  
+
+🧑‍🔬 **Rubén López**  
 [GitHub](https://github.com/rubenlopez77) | [LinkedIn](https://www.linkedin.com/in/ruben-lopez-qa/)
