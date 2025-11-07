@@ -10,6 +10,11 @@ export interface LogEvent {
   error?: string;
 }
 
+/**
+ * Logger BAM v1.2.1
+ * - Muestra duraciones formateadas (s)
+ * - Permite logging visual y JSON estructurado
+ */
 export class Logger {
   private enabled: boolean;
   private trace: LogEvent[] = [];
@@ -18,7 +23,19 @@ export class Logger {
     this.enabled = enabled;
   }
 
-  logAction(component: string, action: string, selector?: string, duration?: number, success = true) {
+  private formatDuration(ms?: number): string {
+    if (ms === undefined) return '';
+    const seconds = (ms / 1000).toFixed(2);
+    return chalk.gray(`(${seconds}s)`);
+  }
+
+  logAction(
+    component: string,
+    action: string,
+    selector?: string,
+    duration?: number,
+    success = true
+  ) {
     const entry: LogEvent = {
       timestamp: new Date().toISOString(),
       component,
@@ -30,10 +47,24 @@ export class Logger {
 
     this.trace.push(entry);
 
+    const symbol = success ? chalk.green('✔') : chalk.red('✖');
+    const durationText = this.formatDuration(duration);
+
     if (this.enabled) {
-      const status = success ? chalk.green('✔') : chalk.red('✖');
-      console.log(chalk.gray(`[${entry.timestamp}]`), status, chalk.cyan(`${component}.${action}`), selector || '');
+      console.log(
+        chalk.gray(`[${entry.timestamp}]`),
+        symbol,
+        chalk.cyan(`${component}.${action}`),
+        selector ? chalk.white(selector) : '',
+        durationText
+      );
     }
+  }
+
+  logTiming(component: string, action: string, duration: number, success = true) {
+    const seconds = (duration / 1000).toFixed(2);
+    const msg = `${component}.${action} : ${seconds}s`;
+    console.log(success ? chalk.green(`--> ${msg}`) : chalk.red(`!! ${msg}`));
   }
 
   logError(component: string, action: string, error: any) {
@@ -48,7 +79,6 @@ export class Logger {
     console.log(chalk.red(`[ERROR] ${component}.${action}: ${entry.error}`));
   }
 
-  // Al finalizar los escenarios, exportar la traza si se requiere
   getTrace(): LogEvent[] {
     return this.trace;
   }
