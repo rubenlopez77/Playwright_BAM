@@ -13,6 +13,68 @@
 
 ---
 
+📊 Estado actual
+
+✅ BAM implementado en 3 pruebas sencillas
+✅ Hooks + Runner + PageFactory operativos
+✅ Pruebas declarativas funcionales
+✅ Trazabilidad automatizada vía extractor JSON/MD
+
+🔜 Próximos pasos
+
+Implementar la tercera capa de Helpers: Componentes
+Integración con SonarQube
+Pipelines Github Actions (CI/CD)
+Añadir exportador HTML interactivo del informe de trazabilidad.
+Integrar métricas de cobertura de requisitos (mapa @ID ↔ resultado).
+Automatizar el pipeline de publicación de reportes.
+
+----
+
+## 🚀 2. Ventajas del modelo BAM
+
+| Categoría | Beneficio | Descripción |
+| --- | --- | --- |
+| 🧠 **Legibilidad** | ✅ Natural y semántica | Las pruebas se leen como historias de usuario: `user.loginWith()` |
+| 🧩 **Modularidad** | ✅ Alta | Separación estricta de capas (component, page, test) |
+| 🧪 **Trazabilidad** | ✅ Integrada | Anotaciones `@ID`, `@Title`, `@Priority`, `@Tags` enlazan cada test a un requisito |
+| 🧱 **Mantenibilidad** | ✅ Elevada | Los cambios de UI afectan solo a helpers, no a la lógica de negocio |
+| ⚡ **Ligereza** | ✅ Sin Gherkin ni Cucumber | Mantiene trazabilidad formal con sintaxis nativa de TypeScript |
+| 🔎 **Formalidad QA** | ✅ Cumple IEEE 29119 e ISO 25010 | Estandariza estructura, trazabilidad, documentación y calidad |
+| 🔁 **Reusabilidad** | ✅ Alta | PageFactory autoinstancia todas las páginas (DRY) |
+| 📊 **Reportabilidad** | ✅ Automática | Generación de informes JSON / Markdown de trazabilidad |
+| 🤝 **Alineación negocio-QA** | ✅ Total | PO y cliente pueden leer y entender las pruebas directamente |
+| 🧩 **Escalabilidad** | ✅ Alta | Soporta nuevos módulos con solo añadir `.page.ts` |
+
+* * *
+
+📊 \*\*Matriz de Evaluación\*\*  
+| Criterio | BDD Clásico | Arquitectura Multicapa | BAM! |  
+|-----------|-------------|------------------------|-----|  
+| \*\*Trazabilidad\*\* | ✅ Excelente | ❌ Limitada | ✅ Excelente |  
+| \*\*Mantenibilidad\*\* | ❌ Baja | ✅ Alta | ✅ Alta |  
+| \*\*Velocidad Ejecución\*\* | ❌ Lenta | ✅ Rápida | ✅ Rápida |  
+| \*\*Business Visibility\*\* | ✅ Alta | ❌ Nula | ⚙️ Media‑Alta |  
+| \*\*Technical Debt\*\* | ❌ Alta | ✅ Baja | ✅ Baja |  
+| \*\*AI Compatibility\*\* | ❌ Difícil | ⚙️ Media | ✅ Alta |
+
+---
+
+## 📐 3. Cumplimiento con IEEE 29119 / ISO 25010
+
+El modelo BAM se alinea directamente con **los estándares internacionales de calidad y pruebas** al cubrir los elementos normativos clave.
+
+| Norma | Cumplimiento | Justificación |
+| --- | --- | --- |
+| **IEEE 29119-3 – Test Documentation** | ✅   | Cada test incluye anotaciones formales (`@ID`, `@Title`, `@Description`, `@Priority`, `@Tags`) equivalentes a los *Test Case Specifications* y *Test Procedure Specifications* del estándar. |
+| **IEEE 29119-4 – Test Techniques** | ✅   | Se estructura por capas (equivalente a *keyword-driven* y *model-based testing*). Las técnicas de validación y espera se centralizan en helpers reutilizables. |
+| **IEEE 29119-2 – Test Process** | ✅   | Integra fases de diseño, ejecución y documentación trazable, con hooks que garantizan la repetibilidad del entorno de prueba. |
+| **ISO 25010 – Product Quality Model** | ✅   | BAM mejora las características de *Maintainability*, *Usability*, *Reliability* y *Portability* del producto de pruebas. |
+| **ISO 9126 / ISO 25000 – Software Quality Requirements** | ✅   | Los tests documentan explícitamente los requisitos funcionales mediante metadatos. |
+| **ISTQB Best Practices** | ✅   | Cumple “Single Level of Abstraction per Layer”, modularidad POM y separación de responsabilidades. |
+
+* * *
+
 ## 🤖  Experimentación con IA
 
 La integración de herramientas de inteligencia artificial (IA) en entornos de pruebas automatizadas puede aportar velocidad y asistencia en la generación de escenarios o casos de prueba.  

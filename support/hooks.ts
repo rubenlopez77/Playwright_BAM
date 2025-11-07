@@ -1,22 +1,13 @@
-import { After, AfterAll, Before } from '@cucumber/cucumber';
-import { DriverFactory } from './driverFactory';
-import { logger } from './logger';
+import { Before, After, setDefaultTimeout } from '@cucumber/cucumber';
+import { EnvConfig } from './env';
 
-Before(async function () {
-  if (process.env.LOG === 'true') logger.info('🟦 [Before] Inicio de escenario');
+setDefaultTimeout(EnvConfig.CUCUMBER_TIMEOUT);
+
+Before(async function (scenario) {
   await this.init();
-  if (process.env.LOG === 'true') logger.info('🟩 [Before] Contexto inicializado');
+  if (!EnvConfig.LOG) console.log(`\n🧩 Scenario: ${scenario.pickle.name}`);
 });
 
 After(async function () {
-  if (process.env.LOG === 'true') logger.info('🟧 [After] Escenario terminado');
-
-  // ✅ Delega limpieza de contexto al CustomWorld
-  await this.cleanup?.();
-});
-
-AfterAll(async function () {
-  if (process.env.LOG === 'true') logger.info('🟥 [AfterAll] Intentando cerrar navegador...');
-  await DriverFactory.closeBrowser();
-  if (process.env.LOG === 'true') logger.info('✅ [AfterAll] Cierre global completo');
+  await this.close();
 });

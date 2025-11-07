@@ -25,5 +25,9 @@
   // Opcional: coloreado Gherkin
   "files.associations": {
     "*.feature": "feature"
+  },
+  "sonarlint.connectedMode.project": {
+    "connectionId": "Local SonarQube",
+    "projectKey": "Playwright"
   }
 }

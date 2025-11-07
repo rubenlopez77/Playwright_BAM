@@ -1,51 +1,65 @@
-// support/world.ts
-import { setWorldConstructor, World } from '@cucumber/cucumber';
-import { PageFactory } from './pageFactory';
-import { DriverFactory } from './driverFactory';
-import { logger } from './logger';
+import { setWorldConstructor } from '@cucumber/cucumber';
+import { chromium, firefox, webkit, Browser, BrowserContext, Page } from 'playwright';
+import { EnvConfig } from './env';
+import { Logger } from './logger';
 
-export class CustomWorld extends World {
-  browser: any;
-  context: any;
-  page: any;
-  // 👇 añade esta línea
-  pages!: Record<string, any>;
+export class CustomWorld {
+  browser!: Browser;
+  context!: BrowserContext;
+  page!: Page;
+  logger!: Logger;
+
+  private queue: Array<() => Promise<void>> = [];
+  private pageInstances = new Map<string, any>();
 
   async init() {
-    this.browser = await DriverFactory.getBrowser();
+    this.logger = new Logger(EnvConfig.LOG);
+
+    const browserType =
+      EnvConfig.BROWSER === 'firefox' ? firefox : EnvConfig.BROWSER === 'webkit' ? webkit : chromium;
+
+    this.browser = await browserType.launch({ headless: EnvConfig.HEADLESS });
     this.context = await this.browser.newContext();
     this.page = await this.context.newPage();
 
-    const factory = new PageFactory(this.page);
+    if (EnvConfig.TRACE) {
+      await this.context.tracing.start({ screenshots: true, snapshots: true });
+    }
 
-    // guarda referencia para cleanup (flush, etc.)
-    this.pages = factory;
+    await this.page.goto(EnvConfig.BASE_URL);
+  }
 
-    // y además inyecta acceso directo: this.login, this.home, etc.
-    Object.assign(this, factory);
+  enqueue(action: () => Promise<void>) {
+    this.queue.push(action);
+  }
 
-    if (process.env.LOG === 'true') {
-      logger.info('🌍 World inicializado con inyección directa de páginas');
+  async flush() {
+    for (const action of this.queue) {
+      try {
+        await action();
+      } catch (err) {
+        console.error('Error in queued action:', err);
+        throw err;
+      }
+    }
+    this.queue = [];
+  }
+
+  async close() {
+    try {
+      await this.flush();
+      if (EnvConfig.TRACE) await this.context.tracing.stop({ path: `trace-${Date.now()}.zip` });
+    } finally {
+      await this.browser?.close();
     }
   }
 
-  async cleanup() {
-    try {
-      // espera a que terminen tareas pendientes de todas las pages
-      if (this.pages) {
-        for (const [name, pageInstance] of Object.entries(this.pages)) {
-          if (typeof (pageInstance as any).flush === 'function') {
-            await (pageInstance as any).flush();
-          }
-        }
-      }
-      await new Promise(r => setTimeout(r, 200));
-      await this.context?.close();
-      if (process.env.LOG === 'true') logger.info('🧹 Contexto cerrado correctamente.');
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      logger.warn(`⚠️ Error al cerrar contexto: ${msg}`);
+  getPage<T>(PageClass: new (world: CustomWorld) => T): T {
+    const key = PageClass.name;
+    if (!this.pageInstances.has(key)) {
+      this.pageInstances.set(key, new PageClass(this));
     }
+    return this.pageInstances.get(key);
   }
 }
 
