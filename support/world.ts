@@ -10,7 +10,7 @@ export class CustomWorld {
   logger!: Logger;
 
   private queue: Array<() => Promise<void>> = [];
-  private pageInstances = new Map<string, any>();
+  private readonly pageInstances = new Map<string, any>();
 
   async init() {
     this.logger = new Logger(EnvConfig.LOG);
@@ -48,7 +48,7 @@ export class CustomWorld {
   async close() {
     try {
       await this.flush();
-      if (EnvConfig.TRACE) await this.context.tracing.stop({ path: `trace-${Date.now()}.zip` });
+      if (EnvConfig.TRACE) await this.context.tracing.stop({ path: `reports/trace-${Date.now()}.zip` });
     } finally {
       await this.browser?.close();
     }

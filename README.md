@@ -1,5 +1,13 @@
 # 🧪 Behavior Annotation Model (BAM) · Playwright + Cucumber + TypeScript
 
+> 🧩 **Nota importante**
+> Este repositorio forma parte de una **Proof of Concept (BAM v0.1.3)** desarrollada para explorar
+> arquitecturas de automatización QA basadas en principios **ISTQB, IEEE 29119 e ISO 25010**.
+>  
+> Su objetivo es **mostrar capacidad de diseño y razonamiento arquitectónico**, no entregar un framework productivo.
+>  
+> Se comparte públicamente para **análisis, revisión y crítica técnica** como parte del proceso de madurez del modelo.
+
 **Versión:** 0.1.3 (PoC)  
 **Estado:** Experimental / No productivo  
 
@@ -49,9 +57,11 @@ Logger (Métricas + Trazabilidad)
 | **Compliance QA** | ⚙️ Media (solo BDD) | ⚙️ Media (estructural) | ✅ Alta (estándares múltiples) |
 | **Escalabilidad** | ⚙️ Media (complexity steps) | ✅ Alta (modular) | ✅ Alta (multi-actor) |
 | **Observabilidad** | ❌ Baja (logging manual) | ❌ Baja (manual) | ⚙️ Buena (Logger integrado) |
- ```
-Puntos de mejora: Observabilidad, AI, Velocidad
- ```
+
+## Puntos de mejora (en análsis)
+🔹 Observabilidad: Exportar métricas y logs en formato estructurado (JSON Lines / Prometheus / Elastic) y generar dashboards HTML con KPIs de rendimiento y éxito por requisito.
+
+🔹 Velocidad / Parallelismo: Implementar BAM Runner Pool y Browser Context reuse para ejecución concurrente y reducción del tiempo total sin perder determinismo.
 ---
 
 ## ✅ Verificación de Cumplimiento
@@ -108,39 +118,45 @@ When('the user logs in with valid credentials', function () {
 - [x] Data layer para credenciales
 
 ### 🚧 En Desarrollo
-- [ ] Sistema de métricas
-- Medir duración, éxito y número de acciones por escenario.  
-- Generar `BAMMetrics.json` con KPIs agregados (avg_duration, success_rate).  
-- Base para dashboards de rendimiento y calidad (a futuro).
+- [ ] **Paralelismo controlado** (BAM Runner Pool o similar. Sin mezclar contextos!)
+      - Ejecución concurrente de Worlds aislados.
+      - Sincronización de métricas y logger.
+---      
+- [ ] **Sistema de métricas**
+      - Medir duración, éxito y número de acciones por escenario.    
+      - Generar `BAMMetrics.json` con KPIs agregados (avg_duration, success_rate).  
+      - Base para dashboards de rendimiento y calidad (a futuro).
 ---
 
-- [ ] Trazabilidad formal test ↔ requisito (decoradores)
-- Decoradores por Scenario:  
-  ```ts
-  @Requirement('REQ-A-1234', 'Login with valid credentials')
-  @Risk('HIGH')
-  @Owner('QA-Lead')
-  @SET('Smoke')
-  ```
-- Exportar matriz **Requisito ↔ Test ↔ Resultado ↔ Riesgo**.
+- [ ] **Trazabilidad** formal test ↔ requisito (decoradores)
+      - Decoradores por Scenario:  
+      ```ts
+      @Requirement('REQ-A-1234', 'Login with valid credentials')
+      @Risk('HIGH')
+      @Owner('QA-Lead')
+      @SET('Smoke')
+      ```
+      - Exportar matriz **Requisito ↔ Test ↔ Resultado ↔ Riesgo**.
 ---
-- [ ] Integración CI/CD
-- Publicación automática y Quality Gates (SonarQube) en pipelines GitHub / GitLab / Azure.
+- [ ] **Integración CI/CD**
+      - Publicación automática y Quality Gates (SonarQube) en pipelines GitHub / GitLab / Azure / (Jenkins?).
 ---
-- [ ] Refinamiento del sistema de logs
-- Introducir **EventBusLogger** con niveles `compact | standard | verbose`.  
-- Auto-detección de `component` y `action`.  
-- Centralización total del formato de salida (sin duplicación en Pages, demasiado verbose actualmente).  
+- [ ] **Refinamiento del sistema de logs**
+      - Mejorar **Logger** con niveles `compact | standard | verbose`.  
+      - Auto-detección de `component` y `action`.  
+      - Centralización total del formato de salida (sin duplicación en Pages, demasiado verbose actualmente).  
 ---
-- [ ]  Dashboards
-- JSON Lines / Prometheus / Elastic.  
-- Dashboards  HTML con tiempos medios, éxito por requisito y tendencia temporal.
+- [ ]  **Dashboards**
+      - JSON Lines / Prometheus / Elastic.  
+      - Dashboards  HTML con tiempos medios, éxito por requisito y tendencia temporal.
 
-### 🚧 Mas adelante...
-###  Mas adelante... (v1.0)**
+### 🚧 **Mas adelante...** 
 - [ ]   Generación automática de **BAMReport HTML/PDF**.  
 - [ ]   Export a Xray, TestRail o Kiwi TCMS.  
 - [ ]   Revisión automatizada de cobertura de requisitos.
+- [ ]   Inteligencia Artificial: Integrar análisis predictivo y priorización automática de escenario
+- [ ]   Inteligencia Artificial: (Es posible?) **Escritura generativa de pruebas manteniendo la estructura BAM** (DSL declarativo + trazabilidad formal)
+
 ---
 
 ## 👨‍💻 Autor

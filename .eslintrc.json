@@ -1,44 +1,8 @@
 {
-  "env": {
-    "es6": true,
-    "node": true
-  },
+  "//": "Este archivo no está activo en BAM v0.1.3. Reservado para validaciones estáticas futuras (CI/CD Quality Gate).",
   "parser": "@typescript-eslint/parser",
-  "plugins": ["@typescript-eslint"],
-  "extends": [
-    "eslint:recommended",
-    "plugin:@typescript-eslint/recommended"
-  ],
+  "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
   "rules": {
-    /* 1️⃣ Requiere await para promesas */
-    "@typescript-eslint/await-thenable": "error",
-
-    /* 2️⃣ Prohíbe page.waitForTimeout (usa condiciones explícitas) */
-    "no-restricted-syntax": [
-      "error",
-      {
-        "selector": "MemberExpression[property.name='waitForTimeout']",
-        "message": "Evita page.waitForTimeout(). Usa esperas condicionales como page.waitForSelector() o expect()."
-      }
-    ],
-
-    /* 3️⃣ Promueve uso de getByRole/getByTestId */
-    "no-restricted-properties": [
-      "error",
-      {
-        "object": "page",
-        "property": "locator",
-        "message": "Usa getByRole o getByTestId en lugar de locator() para selectores más estables."
-      },
-      {
-        "object": "page",
-        "property": "$",
-        "message": "Evita selectores CSS directos. Usa getByRole o getByTestId."
-      }
-    ],
-
-    /* Reglas adicionales recomendadas */
-    "semi": ["error", "always"],
-    "quotes": ["error", "single"]
+    "@typescript-eslint/no-unused-vars": "warn"
   }
 }
