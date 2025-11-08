@@ -1,5 +1,5 @@
 import * as dotenv from 'dotenv';
-import path from 'path';
+import path from 'node:path';
 
 const envFile = process.env.NODE_ENV === 'production' ? '.env.pro' : '.env.qa';
 dotenv.config({ path: path.resolve(process.cwd(), envFile) });
