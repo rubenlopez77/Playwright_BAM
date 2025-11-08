@@ -90,7 +90,7 @@ Cumple los principios **ISTQB 2023+** e **IEEE 29119**:
 
 | Módulo | Responsabilidad principal |
 |---------|-----------------------------|
-| **World** | Control del ciclo de vida de navegador y page por escenario. Gestiona la cola de acciones y asegura ejecución determinista. |
+| **ExecutionContext** | Control del ciclo de vida del navegador y la page por escenario. Gestiona la cola determinista de acciones, centraliza logging y métricas, y asegura aislamiento total entre escenarios. |
 | **Hooks** | Inicialización y cierre de entorno (Before/After) integrados con Cucumber. |
 | **Logger** | Registro centralizado de acciones, errores y métricas de duración formateadas. |
 | **Components Layer** | Abstracción mínima sobre elementos UI (textbox, modal, button...). |

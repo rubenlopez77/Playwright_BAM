@@ -3,7 +3,7 @@ import { chromium, firefox, webkit, Browser, BrowserContext, Page } from 'playwr
 import { EnvConfig } from './env';
 import { Logger } from './logger';
 
-export class CustomWorld {
+export class ExecutionContext {
   browser!: Browser;
   context!: BrowserContext;
   page!: Page;
@@ -15,14 +15,20 @@ export class CustomWorld {
   async init() {
     this.logger = new Logger(EnvConfig.LOG);
 
-    const browserType =
-      EnvConfig.BROWSER === 'firefox' ? firefox : EnvConfig.BROWSER === 'webkit' ? webkit : chromium;
+  const browserMap: Record<string, any> = {
+      firefox,
+      webkit,
+      chromium,
+    };
 
-    this.browser = await browserType.launch({ headless: EnvConfig.HEADLESS });
-    this.context = await this.browser.newContext();
-    this.page = await this.context.newPage();
+  const browserType = browserMap[EnvConfig.BROWSER] ?? chromium;
 
-    if (EnvConfig.TRACE) {
+
+  this.browser = await browserType.launch({ headless: EnvConfig.HEADLESS });
+  this.context = await this.browser.newContext();
+  this.page = await this.context.newPage();
+
+  if (EnvConfig.TRACE) {
       await this.context.tracing.start({ screenshots: true, snapshots: true });
     }
 
@@ -54,7 +60,7 @@ export class CustomWorld {
     }
   }
 
-  getPage<T>(PageClass: new (world: CustomWorld) => T): T {
+  getPage<T>(PageClass: new (world: ExecutionContext) => T): T {
     const key = PageClass.name;
     if (!this.pageInstances.has(key)) {
       this.pageInstances.set(key, new PageClass(this));
@@ -63,4 +69,4 @@ export class CustomWorld {
   }
 }
 
-setWorldConstructor(CustomWorld);
+setWorldConstructor(ExecutionContext);

@@ -1,8 +1,9 @@
-import { CustomWorld } from '../support/world';
+import { ExecutionContext } from '../support/execution-context';
 import { ModalComponent } from '../components/modal.component';
 import { TextboxComponent } from '../components/textbox.component';
 import { BaseComponent } from '../components/base.component';
-import { credentials, CredentialSet } from '../data/credentials.data';
+import { ButtonComponent } from '../components/button.component';
+import { CredentialSet } from '../data/credentials.data';
 
 export const LoginLocators = {
   OPEN_BUTTON: { selector: '#login2', type: 'button' } as const,
@@ -14,71 +15,38 @@ export const LoginLocators = {
 } as const;
 
 export class LoginPage {
-  private readonly world: CustomWorld;
+  private readonly world: ExecutionContext;
   private readonly modal: ModalComponent;
   private readonly username: TextboxComponent;
   private readonly password: TextboxComponent;
+  private readonly userDisplay: BaseComponent;
+  private readonly submitButton: ButtonComponent;
 
-  constructor(world: CustomWorld) {
+
+  constructor(world: ExecutionContext) {
     this.world = world;
     this.modal = new ModalComponent(world, LoginLocators.OPEN_BUTTON.selector, 'LoginModal');
     this.username = new TextboxComponent(world, LoginLocators.USERNAME.selector, 'UsernameField');
     this.password = new TextboxComponent(world, LoginLocators.PASSWORD.selector, 'PasswordField');
+    this.userDisplay = new TextboxComponent(world, LoginLocators.USER_DISPLAY.selector, 'UserDisplay');
+    this.submitButton = new ButtonComponent(world, LoginLocators.SUBMIT.selector, 'SubmitButton');
   }
 
   openLoginModal() {
     this.modal.open();
   }
 
-  /** Realiza login utilizando un conjunto de credenciales */
+
   loginWith(set: CredentialSet) {
     this.openLoginModal();
     this.username.fill(set.username);
     this.password.fill(set.password);
 
-    this.world.enqueue(async () => {
-      const { page, logger } = this.world;
-      const start = performance.now();
-
-      await page.click(LoginLocators.SUBMIT.selector);
-
-      // 🔹 Espera observable (no explícita): espera a que el elemento muestre contenido visible
-      let success = false;
-      try {
-        await page.waitForFunction(
-          (selector) => {
-            const el = document.querySelector(selector);
-            return !!(el && el.textContent && el.textContent.trim().length > 0);
-          },
-          LoginLocators.USER_DISPLAY.selector,
-          { timeout: 3000 } // timeout controlado, no sleep
-        );
-        success = true;
-      } catch {
-        success = false;
-      }
-
-      const duration = performance.now() - start;
-      logger.logAction(
-        'LoginPage',
-        `loginAttempt (${set.username})`,
-        LoginLocators.SUBMIT.selector,
-        duration,
-        success
-      );
-      logger.logTiming('LoginPage', 'loginAttempt', duration, success);
-
-      if (!success) {
-        logger.logError(
-          'LoginPage',
-          'loginAttempt',
-          new Error('Login timeout: user display not updated')
-        );
-      }
-    });
+    this.submitButton.click();
+    this.userDisplay.waitForNonEmptyText(); 
   }
 
-  /** Verifica que el usuario está logueado (espera texto dinámico visible) */
+  // Verifica que el usuario está logueado 
   expectLoggedIn(username?: string) {
     const displaySelector = LoginLocators.USER_DISPLAY.selector;
     const verifier = new (class extends BaseComponent {})(this.world, displaySelector, 'UserDisplay');

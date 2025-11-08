@@ -1,17 +1,16 @@
 import { BaseComponent } from './base.component';
 
 export class ModalComponent extends BaseComponent {
+
   open() {
-    this.enqueue(async () => {
-      await this.world.page.click(this.selector);
-      await this.world.page.waitForSelector('#logInModal', { state: 'visible' });
-    }, 'open');
+    this.run('open', async (page) => {
+      await page.click(this.selector);
+    });
   }
 
-  close() {
-    this.enqueue(async () => {
-      await this.world.page.click(`${this.selector} .btn-close`);
-      await this.world.page.waitForSelector('#logInModal', { state: 'hidden' });
-    }, 'close');
+  waitVisible(timeoutMs = 5000) {
+    this.run(`waitVisible(${timeoutMs})`, async (page) => {
+      await page.waitForSelector(this.selector, { state: 'visible', timeout: timeoutMs });
+    });
   }
 }

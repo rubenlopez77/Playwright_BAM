@@ -1,64 +1,93 @@
-import { CustomWorld } from '../support/world';
+import { ExecutionContext } from '../support/execution-context';
 
 export abstract class BaseComponent {
-  protected readonly world: CustomWorld;
+  protected readonly world: ExecutionContext;
   protected readonly selector: string;
   protected readonly name: string;
 
-  constructor(world: CustomWorld, selector: string, name: string) {
+  constructor(world: ExecutionContext, selector: string, name: string) {
     this.world = world;
     this.selector = selector;
     this.name = name;
   }
 
-  protected enqueue(action: () => Promise<void>, actionName: string) {
+  /**
+   * Método universal BAM v1.2 para ejecutar acciones de Component Layer.
+   * - Centraliza logging (action + timing + error)
+   * - Aísla await dentro del runner determinista
+   * - Mantiene API declarativa sin await en Pages
+   */
+  protected run(actionName: string, actionFn: (page: any) => Promise<void>) {
     this.world.enqueue(async () => {
+      const { page, logger } = this.world;
       const start = performance.now();
+
       try {
-        await action();
+        await actionFn(page);
+
         const duration = performance.now() - start;
-        this.world.logger.logAction(this.name, actionName, this.selector, duration, true);
+
+        // ✅ Guardar trazabilidad interna (JSON / métricas)
+        logger.logAction(this.name, actionName, this.selector, duration, true);
+
+        // ✅ ÚNICO log visible en consola
+        logger.logTiming(this.name, actionName, duration, true);
+
       } catch (error) {
-        this.world.logger.logError(this.name, actionName, error);
+        const duration = performance.now() - start;
+
+        // ❌ Guardar error para métricas
+        logger.logAction(this.name, actionName, this.selector, duration, false);
+
+        // ❌ Mostrar error en consola
+        logger.logError(this.name, actionName, error);
+
         throw error;
       }
     });
   }
 
   /**
-   * Espera a que un elemento visible contenga un texto esperado.
-   * Evita falsos negativos en validaciones de contenido dinámico.
+   * Verifica que un elemento visible contenga un texto esperado.
    */
   waitForText(expected: string, timeoutMs = 5000) {
-    this.enqueue(async () => {
-      const { page } = this.world;
-      const start = performance.now();
-      const endTime = start + timeoutMs;
+    this.run(`waitForText("${expected}")`, async (page) => {
+      const endTime = performance.now() + timeoutMs;
+      let found = false;
 
-      await page.waitForSelector(this.selector, { state: 'visible' });
+      await page.waitForSelector(this.selector, { state: 'visible', timeout: timeoutMs });
 
-      let success = false;
       while (performance.now() < endTime) {
         const text = await page.textContent(this.selector);
-        if (text && text.includes(expected)) {
-          success = true;
+
+        if (text?.includes(expected)) {
+          found = true;
           break;
         }
-        await page.waitForTimeout(250);
+
+        // Pequeño delay controlado, NO logic en Page Layer
+        await page.waitForTimeout(150);
       }
 
-      const duration = performance.now() - start;
-      this.world.logger.logAction(
-        this.name,
-        `waitForText("${expected}")`,
-        this.selector,
-        duration,
-        success
-      );
-
-      if (!success) {
+      if (!found) {
         throw new Error(`Expected text "${expected}" not found in element ${this.selector}`);
       }
-    }, `waitForText("${expected}")`);
+    });
+  }
+
+  /**
+   * Verifica que el elemento tenga texto no vacío.
+   */
+  waitForNonEmptyText(timeoutMs = 3000) {
+    this.run(`waitForNonEmptyText(${timeoutMs})`, async (page) => {
+      await page.waitForFunction(
+        (selector: string) => {
+          const el = document.querySelector(selector);
+          return !!el?.textContent?.trim()?.length;
+        },
+        this.selector,
+        { timeout: timeoutMs }
+      );
+    });
   }
 }
