@@ -4,9 +4,9 @@ import { LoginPage } from '../pages/login.page';
 import { credentials } from '../data/credentials.data';
 
 Given('the user opens the home page', function () {
-  const home = this.getPage(HomePage);
-  home.goHome();
-  home.expectLoaded();
+  const user = this.getPage(HomePage);
+  user.goHome();
+  user.expectLoaded();
 });
 
 When('the user logs in with valid credentials', function () {

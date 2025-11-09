@@ -12,7 +12,7 @@ export abstract class BaseComponent {
   }
 
   /**
-   * Método universal BAM v1.2 para ejecutar acciones de Component Layer.
+   * Método universal BAM para ejecutar acciones de Component Layer.
    * - Centraliza logging (action + timing + error)
    * - Aísla await dentro del runner determinista
    * - Mantiene API declarativa sin await en Pages
@@ -27,19 +27,19 @@ export abstract class BaseComponent {
 
         const duration = performance.now() - start;
 
-        // ✅ Guardar trazabilidad interna (JSON / métricas)
+        // JSON / métricas
         logger.logAction(this.name, actionName, this.selector, duration, true);
 
-        // ✅ ÚNICO log visible en consola
+        // Log
         logger.logTiming(this.name, actionName, duration, true);
 
       } catch (error) {
         const duration = performance.now() - start;
 
-        // ❌ Guardar error para métricas
+      
         logger.logAction(this.name, actionName, this.selector, duration, false);
 
-        // ❌ Mostrar error en consola
+        // En caso de error lo muestra en terminal
         logger.logError(this.name, actionName, error);
 
         throw error;
@@ -65,7 +65,7 @@ export abstract class BaseComponent {
           break;
         }
 
-        // Pequeño delay controlado, NO logic en Page Layer
+        // Pequeña espera explicita. necesario.
         await page.waitForTimeout(150);
       }
 

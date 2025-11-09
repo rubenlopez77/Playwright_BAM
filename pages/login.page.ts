@@ -43,11 +43,13 @@ export class LoginPage {
     this.password.fill(set.password);
 
     this.submitButton.click();
-    this.userDisplay.waitForNonEmptyText(); 
+  
   }
 
   // Verifica que el usuario está logueado 
   expectLoggedIn(username?: string) {
+    this.userDisplay.waitForNonEmptyText(); 
+    
     const displaySelector = LoginLocators.USER_DISPLAY.selector;
     const verifier = new (class extends BaseComponent {})(this.world, displaySelector, 'UserDisplay');
     verifier.waitForText(username ?? '');
