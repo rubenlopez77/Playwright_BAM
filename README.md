@@ -9,6 +9,7 @@
 > Se comparte públicamente para **análisis, revisión y crítica técnica** como parte del proceso de madurez del modelo.
 
 ![BAM](https://img.shields.io/badge/BAM_Framework-v0.1.4-blueviolet?logo=testcafe&logoColor=white&style=flat-square) 
+
 **Estado:** Experimental / No productivo  
 
 ---
@@ -141,7 +142,7 @@ npm install ./tools/eslint-plugin-bam-ux --save-dev
 ```
 ---
 ### 📜 Changelog
-Histórico completo de cambios  en [changelog.md](./changelog.mdd).
+Histórico completo de cambios  en [changelog.md](./changelog.md).
 
 
 ```
