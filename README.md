@@ -7,6 +7,8 @@
 > Su objetivo es **mostrar capacidad de diseño y razonamiento arquitectónico**, no entregar un framework productivo.
 >  
 > Se comparte públicamente para **análisis, revisión y crítica técnica** como parte del proceso de madurez del modelo.
+>
+> Aunque mi stack principal es C#/Selenium, he desarrollado este POC en TypeScript para validar ideas sobre trazabilidad y arquitectura BAM
 
 ![BAM](https://img.shields.io/badge/BAM_Framework-v0.1.4-blueviolet?logo=testcafe&logoColor=white&style=flat-square) 
 
