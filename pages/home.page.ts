@@ -6,11 +6,8 @@ import { ExecutionContext } from '../support/execution-context';
 import { NavigationComponent } from '../components/navigation.component';
 import { GenericComponent } from '../components/generic.component';
 import { EnvConfig } from '../support/env';
+import { HomeLocators } from '../ux/home.ux'; 
 
-export const HomeLocators = {
-  MAIN_BANNER: { selector: '#carouselExampleIndicators', type: 'banner' } as const,
-  NAVBAR: { selector: '.navbar-nav', type: 'navigation' } as const,
-} as const;
 
 export class HomePage {
   private readonly world: ExecutionContext;

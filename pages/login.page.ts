@@ -4,15 +4,9 @@ import { TextboxComponent } from '../components/textbox.component';
 import { BaseComponent } from '../components/base.component';
 import { ButtonComponent } from '../components/button.component';
 import { CredentialSet } from '../data/credentials.data';
+import { LoginLocators } from '../ux/login.ux'; 
 
-export const LoginLocators = {
-  OPEN_BUTTON: { selector: '#login2', type: 'button' } as const,
-  MODAL: { selector: '#logInModal', type: 'modal' } as const,
-  USERNAME: { selector: '#loginusername', type: 'textbox' } as const,
-  PASSWORD: { selector: '#loginpassword', type: 'textbox' } as const,
-  SUBMIT: { selector: 'button[onclick="logIn()"]', type: 'button' } as const,
-  USER_DISPLAY: { selector: '#nameofuser', type: 'user-info' } as const,
-} as const;
+
 
 export class LoginPage {
   private readonly world: ExecutionContext;

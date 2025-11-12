@@ -2,7 +2,11 @@
   "name": "playwright-cucumber-ts",
   "version": "1.0.0",
   "scripts": {
-    "test": "cucumber-js features --require-module ts-node/register --require steps/**/*.ts --require support/**/*.ts"
+    "test": "cucumber-js features --require-module ts-node/register --require steps/**/*.ts --require support/**/*.ts",
+    "build:tools": "npm --prefix tools/eslint-plugin-bam-ux run build",
+    "lint:tests": "eslint \"steps/**/*.ts\"",
+    "validate:ux": "ts-node scripts/validate-uxmaps.ts",
+    "quality:check": "npm run build:tools && npm run lint:tests && npm run validate:ux"
   },
   "dependencies": {
     "@cucumber/cucumber": "^10.2.1",
@@ -10,7 +14,17 @@
     "playwright": "^1.56.1"
   },
   "devDependencies": {
+    "@types/eslint": "^9.6.1",
+    "@typescript-eslint/eslint-plugin": "^8.46.4",
+    "@typescript-eslint/parser": "^8.46.4",
+    "eslint": "^9.39.1",
+    "eslint-plugin-bam-ux": "file:tools/eslint-plugin-bam-ux",
+    "module-alias": "^2.2.3",
+    "rimraf": "^6.1.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.5.0"
+  },
+  "_moduleAliases": {
+    "eslint-plugin-bam-ux": "./tools/eslint-plugin-bam-ux/dist"
   }
 }

@@ -1,0 +1,13 @@
+{
+  "name": "eslint-config-bam",
+  "version": "0.1.0",
+  "main": "index.js",
+  "license": "MIT",
+  "private": true,
+  "peerDependencies": {
+    "eslint": "^9.0.0",
+    "eslint-plugin-bam-ux": "*",
+    "@typescript-eslint/parser": "^7.0.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0"
+  }
+}

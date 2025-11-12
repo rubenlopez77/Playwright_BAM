@@ -1,0 +1,75 @@
+{
+  // 🎯 BAM Quality Automation Tasks
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "🔧 Build Tools (BAM UX Plugin)",
+      "type": "shell",
+      "command": "npm run build:tools",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "🧩 Lint (BAM Source)",
+      "type": "shell",
+      "command": "npm run lint",
+      "group": "test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "🧠 Lint (Declarative Tests)",
+      "type": "shell",
+      "command": "npm run lint:tests",
+      "group": "test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "🔍 Validate UX Maps",
+      "type": "shell",
+      "command": "npm run validate:ux",
+      "group": "test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "💯 Full Quality Gate (CI/CD)",
+      "type": "shell",
+      "command": "npm run quality:check",
+      "group": "test",
+      "dependsOn": [
+        "🔧 Build Tools (BAM UX Plugin)",
+        "🧩 Lint (BAM Source)",
+        "🧠 Lint (Declarative Tests)",
+        "🔍 Validate UX Maps"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "problemMatcher": []
+    }
+  ]
+}

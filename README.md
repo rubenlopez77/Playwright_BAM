@@ -114,6 +114,21 @@ When('the user logs in with valid credentials', function () {
 
 ---
 
+🧩 Plugin ESLint BAM - 
+
+El proyecto integra un plugin ESLint propio llamado  
+**eslint-plugin-bam-ux**, diseñado como parte del ecosistema **BAM – Behavior Annotation Model**.
+
+- `bam-ux/test-enforce-pattern` valida la **estructura declarativa BAM**: mostrando errores si no se cumple.
+-  `bam-ux/uxmap-valid`, que valida la **consistencia de los mapas UX**.
+
+Instalación del plugin
+
+``` bash
+npm install ./tools/eslint-plugin-bam-ux --save-dev
+```
+---
+
 ## 🎯 Roadmap 
 
 ### ✅ Implementado
@@ -122,6 +137,7 @@ When('the user logs in with valid credentials', function () {
 - [x] Logger con métricas de tiempo
 - [x] Data layer para credenciales
 - [x] Integración simple CI/CD en Actions y Quality Gates (SonarQube)
+- [x] Integración plugin ESLint BAM
 
 ### 🚧 En Desarrollo
 - [ ] **Paralelismo controlado** (BAM Runner Pool o similar. Sin mezclar contextos!)
