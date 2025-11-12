@@ -3,6 +3,7 @@ import { ModalComponent } from '../components/modal.component';
 import { TextboxComponent } from '../components/textbox.component';
 import { BaseComponent } from '../components/base.component';
 import { ButtonComponent } from '../components/button.component';
+import { AlertComponent } from '../components/alert.component';
 import { CredentialSet } from '../data/credentials.data';
 import { LoginLocators } from '../ux/login.ux'; 
 
@@ -48,5 +49,11 @@ export class LoginPage {
     const verifier = new (class extends BaseComponent {})(this.world, displaySelector, 'UserDisplay');
     verifier.waitForText(username ?? '');
     
+  }
+
+    expectLogError() {
+    const alert = new AlertComponent(this.world, '', 'Alert');
+    alert.expectTexts('Wrong password');
+
   }
 }

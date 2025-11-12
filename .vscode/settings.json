@@ -21,7 +21,7 @@
 
   // 💾 Correcciones automáticas al guardar
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true
+    "source.fixAll.eslint": "explicit"
   },
 
   // 💡 Error Lens: feedback inline tipo Sonar

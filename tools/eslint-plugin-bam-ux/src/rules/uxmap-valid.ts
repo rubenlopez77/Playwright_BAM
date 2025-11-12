@@ -1,7 +1,7 @@
 import type { Rule } from "eslint";
 
 /**
- * 🧩 Rule: uxmap-valid
+ * Rule: uxmap-valid
  * Valida que los archivos *.ux.ts exporten un objeto válido de mapeo de UI.
  */
 

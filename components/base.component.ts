@@ -13,7 +13,6 @@ export abstract class BaseComponent {
 
   /**
    * Método universal BAM para ejecutar acciones de Component Layer.
-   * - Centraliza logging (action + timing + error)
    * - Aísla await dentro del runner determinista
    * - Mantiene API declarativa sin await en Pages
    */
@@ -35,8 +34,7 @@ export abstract class BaseComponent {
 
       } catch (error) {
         const duration = performance.now() - start;
-
-      
+ 
         logger.logAction(this.name, actionName, this.selector, duration, false);
 
         // En caso de error lo muestra en terminal
@@ -46,7 +44,7 @@ export abstract class BaseComponent {
       }
     });
   }
-
+  
   /**
    * Verifica que un elemento visible contenga un texto esperado.
    */

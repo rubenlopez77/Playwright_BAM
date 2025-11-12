@@ -1,14 +1,11 @@
 /**
  * ESLint config for BAM Test Suites
- * Aplica reglas específicas para los tests declarativos (BAM v1.2)
+ * Aplica reglas específicas para los tests declarativos
  * - Enforce pattern: const user = this.getPage(Class);
  * - Sin await ni async
  * - Solo llamadas a user.metodo() y expect()
  */
 
-/**
- * 🎯 ESLint Config for Declarative Steps (BAM v1.2)
- */
 module.exports = {
   root: true,
   parser: '@typescript-eslint/parser',

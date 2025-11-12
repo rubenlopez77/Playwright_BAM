@@ -16,7 +16,6 @@ export class ModalComponent extends BaseComponent {
     /**
    * Espera implícita de visibilidad.
    * Garantiza que el elemento esté visible antes de interactuar sin usar esperas explícitas.
-   * Se ejecuta dentro del runner asegurando robustez y evitando race conditions.
    */
   waitVisible(timeoutMs = 5000) {
     this.run(`waitVisible(${timeoutMs})`, async (page) => {

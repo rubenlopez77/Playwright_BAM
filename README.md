@@ -1,14 +1,14 @@
-# 🧪 Behavior Annotation Model (BAM) · Playwright + Cucumber + TypeScript
+# 🧪 Behavior Annotation Model (BAM!) · Playwright + Cucumber + TypeScript
 
 > 🧩 **Nota importante**
-> Este repositorio forma parte de una **Proof of Concept (BAM v0.1.3)** desarrollada para explorar
+> Este repositorio forma parte de una **Proof of Concept (BAM!)** desarrollada para explorar
 > arquitecturas de automatización QA basadas en principios **ISTQB, IEEE 29119 e ISO 25010**.
 >  
 > Su objetivo es **mostrar capacidad de diseño y razonamiento arquitectónico**, no entregar un framework productivo.
 >  
 > Se comparte públicamente para **análisis, revisión y crítica técnica** como parte del proceso de madurez del modelo.
 
-**Versión:** 0.1.3 (PoC)  
+![BAM](https://img.shields.io/badge/BAM_Framework-v0.1.4-blueviolet?logo=testcafe&logoColor=white&style=flat-square) 
 **Estado:** Experimental / No productivo  
 
 ---
@@ -40,17 +40,16 @@ Page Objects (Orquestación)
    ↓
 Components (Textbox, Modal, Button...)
    ↓
-CustomWorld (Cola Secuencial + Contexto)
+ExecutionContext (Cola Secuencial + Contexto)
    ↓
 Logger (Métricas + Trazabilidad)
    ↳ Playwright (Driver Navegador)
 </pre>
 
-![BAM](https://img.shields.io/badge/BAM_Framework-v0.1.3-blueviolet?logo=testcafe&logoColor=white&style=flat-square) 
 
 ### 🧮 Comparativa de Modelos 
 
-| **Criterio** | **BDD Clásico** | **POM** | **BAM v0.1.3** |
+| **Criterio** | **BDD Clásico** | **POM** | **BAM v0.1.x** |
 |---------------|-----------------|----------|-----------------|
 | **Trazabilidad** | ⚙️ Buena (solo escenarios) | ❌ Limitada (técnica) | ✅ Excelente (requisito ↔ acción) |
 | **Mantenibilidad** | ❌ Media/Baja (step duplication) | ✅ Alta (POM claro) | ✅ Alta (capas separadas) |
@@ -86,7 +85,7 @@ Cumple los principios **ISTQB 2023+** e **IEEE 29119**:
 
 ---
 
-## ⚙️ Arquitectura Actual (v0.1.3)
+## ⚙️ Arquitectura Actual
 
 | Módulo | Responsabilidad principal |
 |---------|-----------------------------|
@@ -107,20 +106,33 @@ When('the user logs in with valid credentials', function () {
  
 **DSL Declarativo:** `user.loginWith(credentials.valid)`
 
-✔ Arquitectura modular y determinista  
+✔ Arquitectura modular y determinista.
 ✔ ISTQB Compliant: separación por capas y auto-verificación  
 ✔ Developer Experience: tipado estricto, errores claros y logs medibles  
 ✔ Performance: lazy loading y control de contexto por escenario
 
 ---
 
-🧩 Plugin ESLint BAM - 
+## 🤖 Integración con IA (experimental)
+Si, esto también tiene IA. El modelo BAM explora el uso de agentes de inteligencia artificial como apoyo al ciclo de automatización,  
+manteniendo siempre la trazabilidad determinista y la validación humana.
+
+Se estudian iniciativas para:
+
+- **Generación de Steps declarativos (BAM!)** a partir de descripciones **BDD Gherkin** mediante agentes LLMs.  
+- **Sugerencia automática de pruebas** en función de la cobertura funcional.  
+- **Análisis inteligente de logs** para detección de patrones de fallo, tiempos anómalos o flujos inestables.  
+- **Validación cruzada entre requerimientos y ejecución real**, contrastando trazas y resultados esperados.
+
+---
+
+## 🧩 Plugin ESLint BAM 
 
 El proyecto integra un plugin ESLint propio llamado  
 **eslint-plugin-bam-ux**, diseñado como parte del ecosistema **BAM – Behavior Annotation Model**.
 
-- `bam-ux/test-enforce-pattern` valida la **estructura declarativa BAM**: mostrando errores si no se cumple.
--  `bam-ux/uxmap-valid`, que valida la **consistencia de los mapas UX**.
+- `bam-ux/test-enforce-pattern` valida la **estructura declarativa BAM** mostrando errores si no se cumple.
+- `bam-ux/uxmap-valid` valida la **consistencia de los mapas UX**.
 
 Instalación del plugin
 
@@ -128,6 +140,21 @@ Instalación del plugin
 npm install ./tools/eslint-plugin-bam-ux --save-dev
 ```
 ---
+### 📜 Changelog
+Histórico completo de cambios  en [changelog.md](./changelog.mdd).
+
+
+```
+- ESLint Plugin "BAM Test Enforcer"
+ • Detecta 'await' en steps declarativos
+ • Valida formato Given/When/Then	
+ • Valida la consistencia de los mapas UX
+ • Promueve el uso de const user = this.getPage(Clase)
+
+- Logger: Bug corregido: la propiedad enabled en printStep estaba invertida, impidiendo imprimir los pasos
+- Mejoras en el logger OK/KO! en consola, manteniendo PASSED / FAILED en trazabilidad JSON (alineado con ISTQB / ISO 29119)
+- Components: Refinamiento de Alert AlertComponent.expectTexts()
+```
 
 ## 🎯 Roadmap 
 

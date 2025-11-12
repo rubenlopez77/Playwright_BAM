@@ -6,7 +6,7 @@
  *  - Selectores vacíos
  */
 
-import fs from 'fs';
+import fs from 'node:fs';
 import path from 'node:path';
 import { globSync } from 'glob';
 import chalk from 'chalk';
@@ -58,12 +58,19 @@ for (const file of files) {
 
 if (errors.length > 0) {
   console.error(chalk.red(`\n❌ UXMap Validation failed with ${errors.length} issue(s):\n`));
+
   for (const e of errors) {
-    console.error(`• ${chalk.yellow(e.file)} → ${e.message}${e.element ? chalk.gray(` [${e.element}]`) : ''}`);
+    const fileText = chalk.yellow(e.file);
+    const elementText = e.element ? chalk.gray(` [${e.element}]`) : '';
+    const messageText = e.message;
+
+    console.error(`• ${fileText} → ${messageText}${elementText}`);
   }
+
   fs.writeFileSync('reports/ux-validation-report.json', JSON.stringify(errors, null, 2));
   process.exit(1);
-} else {
-  console.log(chalk.green(`\n✅ UXMap validation passed for ${files.length} file(s).`));
-  fs.writeFileSync('reports/ux-validation-report.json', JSON.stringify({ result: 'ok' }, null, 2));
-}
+  } else {
+    console.log(chalk.green(`\n✅ UXMap validation passed for ${files.length} file(s).`));
+    fs.writeFileSync('reports/ux-validation-report.json', JSON.stringify({ result: 'ok' }, null, 2));
+  }
+

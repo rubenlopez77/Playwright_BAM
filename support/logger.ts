@@ -1,9 +1,3 @@
-/**
- * Logger BAM 
- * - logAction: guarda trazabilidad JSON pero NO imprime
- * - logTiming: imprime UNA única línea en consola
- * - logError: imprime en rojo
- */
 import chalk from 'chalk';
 
 export interface LogEvent {
@@ -14,6 +8,11 @@ export interface LogEvent {
   duration?: number;
   success?: boolean;
   error?: string;
+  scenarioName?: string;
+  featureName?: string;
+  tags?: string[];
+  stepText?: string;
+  status?: string;
 }
 
 export class Logger {
@@ -30,7 +29,8 @@ export class Logger {
     return `${seconds}s`;
   }
 
-  // ✅ NO imprime nunca
+  // ==== COMPONENT ACTIONS ====
+
   logAction(component: string, action: string, selector?: string, duration?: number, success = true) {
     this.trace.push({
       timestamp: new Date().toISOString(),
@@ -42,16 +42,14 @@ export class Logger {
     });
   }
 
-  // ✅ SOLO imprime si LOG=true
   logTiming(component: string, action: string, duration: number, success = true) {
+    this.logAction(component, action, undefined, duration, success);
     if (!this.enabled) return;
 
-    const seconds = this.formatDuration(duration);
-    const msg = `${component}.${action} : ${seconds}`;
-    console.log(success ? chalk.green(`--> ${msg}`) : chalk.red(`!! ${msg}`));
+    const msg = `${component}.${action} : ${this.formatDuration(duration)}`;
+    console.log(success ? chalk.green(`--> ${msg}`) : chalk.red(`⚠️ ${msg}`));
   }
 
-  // ✅ SOLO imprime si LOG=true
   logError(component: string, action: string, error: any) {
     this.trace.push({
       timestamp: new Date().toISOString(),
@@ -62,7 +60,7 @@ export class Logger {
     });
 
     if (this.enabled) {
-      console.log(chalk.red(`[ERROR] ${component}.${action}: ${error?.message || error}`));
+      console.log(chalk.red(` [ERROR] ${component}.${action}: ${error?.message || error}`));
     }
   }
 
@@ -70,17 +68,53 @@ export class Logger {
     return this.trace;
   }
 
-  printStep(stepType: string, text: string) {
-    if (this.enabled) return; // <-- FIX
+  // ==== BDD SCENARIOS / STEPS ====
 
-    const colorMap: Record<string, chalk.Chalk> = {
-      Given: chalk.green,
-      When: chalk.cyan,
-      Then: chalk.yellow
-    };
+  printScenarioStart(name: string, feature?: string, tags?: string[]) {
+    const color = chalk.hex('#9b6df2'); // morado elegante
+    const line =
+      ` [SCENARIO START] ${name}` +
+      (feature ? ` — feature="${feature}"` : '') +
+      (tags?.length ? ` tags="${tags.join(' ')}"` : '');
+    this.trace.push({
+      timestamp: new Date().toISOString(),
+      component: 'BDD',
+      action: 'ScenarioStart',
+      scenarioName: name,
+      featureName: feature,
+      tags
+    });
+    if (this.enabled) console.log(color(line));
+  }
 
-    const color = colorMap[stepType] ?? chalk.white;
+  printScenarioEnd(name: string, status: string) {
+    const passed = status.toUpperCase() === 'PASSED';
+    const icon = passed ? '✅' : '❌';
+    const text = passed ? 'OK' : 'KO!';
+    const color = passed ? chalk.hex('#9b6df2') : chalk.red;
 
-    console.log(color(`${stepType} ${text}`));
+    const line = `${icon} [SCENARIO END]   ${name} → ${text}`;
+    this.trace.push({
+      timestamp: new Date().toISOString(),
+      component: 'BDD',
+      action: 'ScenarioEnd',
+      scenarioName: name,
+      status 
+    });
+
+    if (this.enabled) console.log(color(line));
+  }
+
+  printStepEnd(text: string, status: string) {
+    const color = chalk.white; // neutro, sin iconos
+    const line = `[STEP] ${text} → ${status.toUpperCase()}`;
+    this.trace.push({
+      timestamp: new Date().toISOString(),
+      component: 'BDD',
+      action: 'StepEnd',
+      stepText: text,
+      status
+    });
+    if (this.enabled) console.log(color(line));
   }
 }

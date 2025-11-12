@@ -1,10 +1,40 @@
-/node_modules/
-/playwright-report/
-/playwright/.cache/
 
-# Playwright
+#  Cosas de Playwright 
 /blob-report/
 /playwright/.auth/
+/playwright/.cache/
+/playwright-report/
 /test-results/
-reports/
+/reports/
+/reports/**/*.zip
 backup.bundle
+
+
+# Generated Code
+/dist/
+/tools/**/dist/
+/build/
+/out/
+*.zip
+*.tmp
+*.bak
+*.log
+
+
+#  Node & Package Management
+/node_modules/
+/package-lock.json
+/pnpm-lock.yaml
+/yarn.lock
+
+
+#  Editor Settings
+.vscode/
+.idea/
+*.code-workspace
+#  Basurilla
+.DS_Store
+Thumbs.db
+/reports/ux-validation-report.json
+/reports/log-*.json
+/trace-*.zip

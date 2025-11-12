@@ -26,7 +26,6 @@ export class HomePage {
    // Accedemos a la portada
   goHome() {
     this.nav.goto(EnvConfig.BASE_URL);
-    this.mainBanner.waitVisible();
   }
 
   //Verifica que la página de inicio ha cargado correctamente
