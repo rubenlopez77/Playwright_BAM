@@ -7,13 +7,14 @@ export class AlertComponent extends BaseComponent {
    * Permite múltiples textos válidos.
    */
   expectTexts(expected: string | string[]) {
-    this.run(`expectTexts(${expected})`, async (page) => {
-      const dialog = await page.waitForEvent('dialog', { timeout: 5000 });
-      const message = dialog.message().trim().toLowerCase();
+    const waitForDialog = this.world.page.waitForEvent('dialog', { timeout: 5000 });
+    const patterns = Array.isArray(expected)
+      ? expected.map(e => e.trim().toLowerCase())
+      : [expected.trim().toLowerCase()];
 
-      const patterns = Array.isArray(expected)
-        ? expected.map(e => e.trim().toLowerCase())
-        : [expected.trim().toLowerCase()];
+    this.run(`expectTexts(${expected})`, async () => {
+      const dialog = await waitForDialog;
+      const message = dialog.message().trim().toLowerCase();
 
       const match = patterns.some(p => message.includes(p));
 

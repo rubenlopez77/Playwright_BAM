@@ -4,23 +4,23 @@
  */
 import { ExecutionContext } from '../support/execution-context';
 import { NavigationComponent } from '../components/navigation.component';
-import { GenericComponent } from '../components/generic.component';
+import { WaitComponent } from '../components/wait.component';
 import { EnvConfig } from '../support/env';
 import { HomeLocators } from '../ux/home.ux'; 
 
 
 export class HomePage {
-  private readonly world: ExecutionContext;
+  private readonly context: ExecutionContext;
   private readonly nav: NavigationComponent;
-  private readonly mainBanner: GenericComponent;
-  private readonly navbar: GenericComponent;
+  private readonly mainBanner: WaitComponent;
+  private readonly navbar: WaitComponent;
+
 
   constructor(world: ExecutionContext) {
-    this.world = world;
-
+    this.context = world;
     this.nav = new NavigationComponent(world, '', 'Navigator');
-    this.mainBanner = new GenericComponent(world, HomeLocators.MAIN_BANNER.selector, 'MainBanner');
-    this.navbar = new GenericComponent(world, HomeLocators.NAVBAR.selector, 'Navbar');
+    this.mainBanner = new WaitComponent(world, HomeLocators.MAIN_BANNER.selector, 'MainBanner');
+    this.navbar = new WaitComponent(world, HomeLocators.NAVBAR.selector, 'Navbar');
   }
 
    // Accedemos a la portada
@@ -32,6 +32,7 @@ export class HomePage {
   expectLoaded() {
     this.mainBanner.waitVisible();
     this.navbar.waitVisible();
+
   }
 }
 

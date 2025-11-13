@@ -1,25 +1,15 @@
-import { BaseComponent } from './base.component';
+import { WaitComponent } from './wait.component';
 
-export class ModalComponent extends BaseComponent {
-    /**
-   * Abnre el modal y espera a que esté visible en la página
-   * Llama internamente a waitVisible()
+export class ModalComponent extends WaitComponent {
+  /**
+   * Abre el modal y espera a que esté visible en la página.
+   * Se apoya en waitVisible() heredado de GenericComponent.
    */
-   open() {
-    this.run('open', async (page) => {
-      await page.click(this.selector);
+  open() {
+    this.execute('open', async (page) => {
+      await page.click(this.selectorValue);
     });
 
-    
-    this.waitVisible();
-  }
-    /**
-   * Espera implícita de visibilidad.
-   * Garantiza que el elemento esté visible antes de interactuar sin usar esperas explícitas.
-   */
-  waitVisible(timeoutMs = 5000) {
-    this.run(`waitVisible(${timeoutMs})`, async (page) => {
-      await page.waitForSelector(this.selector, { state: 'visible', timeout: timeoutMs });
-    });
+    this.waitVisible(); 
   }
 }

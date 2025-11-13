@@ -159,7 +159,7 @@ npm install ./tools/eslint-plugin-bam-ux --save-dev
 ```
 ---
 ### 📜 Changelog
-Histórico completo de cambios  en [changelog.md](changelog.md).
+Histórico completo de cambios  en [changelog.md](changes.md).
 
 
 ```

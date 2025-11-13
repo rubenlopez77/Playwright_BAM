@@ -11,6 +11,14 @@ export abstract class BaseComponent {
     this.name = name;
   }
 
+
+  public get selectorValue(): string {
+    return this.selector;
+  }
+  public execute(actionName: string, fn: (page: any) => Promise<void>) {
+    this.run(actionName, fn);
+  }
+
   /**
    * Método universal BAM para ejecutar acciones de Component Layer.
    * - Aísla await dentro del runner determinista
@@ -45,47 +53,5 @@ export abstract class BaseComponent {
     });
   }
   
-  /**
-   * Verifica que un elemento visible contenga un texto esperado.
-   */
-  waitForText(expected: string, timeoutMs = 5000) {
-    this.run(`waitForText("${expected}")`, async (page) => {
-      const endTime = performance.now() + timeoutMs;
-      let found = false;
 
-      await page.waitForSelector(this.selector, { state: 'visible', timeout: timeoutMs });
-
-      while (performance.now() < endTime) {
-        const text = await page.textContent(this.selector);
-
-        if (text?.includes(expected)) {
-          found = true;
-          break;
-        }
-
-        // Pequeña espera explicita. necesario.
-        await page.waitForTimeout(150);
-      }
-
-      if (!found) {
-        throw new Error(`Expected text "${expected}" not found in element ${this.selector}`);
-      }
-    });
-  }
-
-  /**
-   * Verifica que el elemento tenga texto no vacío.
-   */
-  waitForNonEmptyText(timeoutMs = 3000) {
-    this.run(`waitForNonEmptyText(${timeoutMs})`, async (page) => {
-      await page.waitForFunction(
-        (selector: string) => {
-          const el = document.querySelector(selector);
-          return !!el?.textContent?.trim()?.length;
-        },
-        this.selector,
-        { timeout: timeoutMs }
-      );
-    });
-  }
 }
