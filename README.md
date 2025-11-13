@@ -49,6 +49,34 @@ Logger (Métricas + Trazabilidad)
    ↳ Playwright (Driver Navegador)
 </pre>
 
+### 🧩 BAM en distintos frameworks
+El modelo BAM (Behavior Annotation Model) es independiente del lenguaje y del framework de automatización.
+Puede aplicarse a cualquier stack que permita estructurar las pruebas de forma declarativa y reproducible.
+
+Playwright + TypeScript (implementación BAM en este repositorio)
+
+- Selenium + Spectrum ✅ 
+- Selenium + C# / JUnit / TestNG ✅ 
+- WebdriverIO + JavaScript ✅
+- Cypress ⚠️ - BDD No nativo, con limitaciones.
+- Robot Framework ⚠️ - Parcial  
+- API Testing: REST Assured, Bruno, Pact, Supertest… ⚠️ - Parcial
+
+> Estos frameworks son candidatos interesantes para aplicar BAM, aunque su implementación óptima requiere investigación y experimentación adicionales.
+
+## 🤖 Integración con IA: DINO (En fase experimental)
+BAM se integra dentro del ecosistema con DINO, un agente IA diseñado para generar, validar y orquestar artefactos declarativos:
+
+DINO analiza features, steps, requisitos y ejecución para complementar BAM con:
+
+- Generación inteligente de pruebas
+- Validación automática de reglas
+- detección de gaps
+- Documentación viva
+- QA del QA
+
+➡️ Conoce mas en el repo de DINO [GitHub](https://github.com/rubenlopez77/DINO)
+
 
 ### 🧮 Comparativa de Modelos 
 
@@ -116,19 +144,6 @@ When('the user logs in with valid credentials', function () {
 
 ---
 
-## 🤖 Integración con IA (experimental)
-Si, esto también tiene IA. El modelo BAM explora el uso de agentes de inteligencia artificial como apoyo al ciclo de automatización,  
-manteniendo siempre la trazabilidad determinista y la validación humana.
-
-Se estudian iniciativas para:
-
-- **Generación de Steps declarativos (BAM!)** a partir de descripciones **BDD Gherkin** mediante agentes LLMs.  
-- **Sugerencia automática de pruebas** en función de la cobertura funcional.  
-- **Análisis inteligente de logs** para detección de patrones de fallo, tiempos anómalos o flujos inestables.  
-- **Validación cruzada entre requerimientos y ejecución real**, contrastando trazas y resultados esperados.
-
----
-
 ## 🧩 Plugin ESLint BAM 
 
 El proyecto integra un plugin ESLint propio llamado  
@@ -144,7 +159,7 @@ npm install ./tools/eslint-plugin-bam-ux --save-dev
 ```
 ---
 ### 📜 Changelog
-Histórico completo de cambios  en [changelog.md](./changelog.md).
+Histórico completo de cambios  en [changelog.md](changelog.md).
 
 
 ```
