@@ -10,7 +10,7 @@
 >
 > Aunque mi stack principal es C#/Selenium, he desarrollado este POC en TypeScript para validar ideas sobre trazabilidad y arquitectura BAM
 
-![BAM](https://img.shields.io/badge/BAM_Framework-v0.1.4-blueviolet?logo=testcafe&logoColor=white&style=flat-square) 
+![BAM](https://img.shields.io/badge/BAM_Framework-v0.1.5-blueviolet?logo=testcafe&logoColor=white&style=flat-square) 
 
 **Estado:** Experimental / No productivo  
 

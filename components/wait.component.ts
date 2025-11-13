@@ -4,32 +4,39 @@
  */
 import { BaseComponent } from './base.component';
 
+
+
 export class WaitComponent extends BaseComponent {
 
-  waitVisible(timeoutMs = 5000) {
-    this.run(`waitVisible(${timeoutMs})`, async (page) => {
-      await page.waitForSelector(this.selector, { state: 'visible', timeout: timeoutMs });
+  readonly timeout = Number(process.env.CUCUMBER_TIMEOUT);
+  
+  waitVisible() {
+    this.run('waitVisible', async (page) => {
+      await page.waitForSelector(this.selector, { 
+        state: 'visible', 
+        timeout: this.timeout 
+      });
     });
   }
 
-  isVisible(timeoutMs = 500) {
-    this.run(`isVisible(${timeoutMs})`, async (page) => {
-      await page.waitForSelector(this.selector, { state: 'visible', timeout: timeoutMs });
+
+  waitNotVisible() {
+    this.run(`waitNotVisible`, async (page) => {
+      await page.waitForSelector(this.selector, { state: 'hidden', timeout:  this.timeout  });
     });
   }
-
 
     /**
    * Verifica que este componente visible contenga un texto esperado.
    */
-  waitForText(expected: string, timeoutMs = 5000) {
+  waitForText(expected: string) {
     this.execute(`waitForText("${expected}")`, async (page) => {
-      const endTime = performance.now() + timeoutMs;
+      const endTime = performance.now() +  this.timeout ;
       let found = false;
 
       await page.waitForSelector(this.selectorValue, {
         state: 'visible',
-        timeout: timeoutMs
+        timeout: this.timeout
       });
 
       while (performance.now() < endTime) {
@@ -54,15 +61,15 @@ export class WaitComponent extends BaseComponent {
   /**
    * Verifica que este componente tenga texto no vacío.
    */
-  waitForNonEmptyText(timeoutMs = 3000) {
-    this.execute(`waitForNonEmptyText(${timeoutMs})`, async (page) => {
+  waitForNonEmptyText() {
+      this.run(`waitForNonEmptyText`, async (page) => {
       await page.waitForFunction(
         (selector: string) => {
           const el = document.querySelector(selector);
           return !!el?.textContent?.trim()?.length;
         },
         this.selectorValue,
-        { timeout: timeoutMs }
+        { timeout: this.timeout }
       );
     });
   }

@@ -5,8 +5,8 @@ import { UxElement } from '../ux/ux-element';
  * Artefacto declarativo que describe los elementos del flujo de login.
  */
 export const LoginLocators = {
-  OPEN_BUTTON: { selector: '#login2', type: 'button', description: 'Menú principal de navegación' },
-  MODAL: { selector: '#logInModal', type: 'modal' , description: 'Log in nodal'},
+  LOGIN_BUTTON: { selector: '#login2', type: 'button', description: 'Botón de Logín' },
+  MODAL: { selector: '#logInModal', type: 'modal' , description: 'Log in modal'},
   USERNAME: { selector: '#loginusername', type: 'textbox' , description: 'Username'},
   PASSWORD: { selector: '#loginpassword', type: 'textbox' , description: 'Password'},
   SUBMIT: { selector: 'button[onclick="logIn()"]', type: 'button' , description: 'Log in'},

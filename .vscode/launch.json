@@ -4,30 +4,13 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug Cucumber",
-      "program": "${workspaceFolder}/node_modules/@cucumber/cucumber/bin/cucumber-js",
-      "args": [
-        "features",
-        "--require-module",
-        "ts-node/register",
-        "--require",
-        "steps/**/*.ts",
-        "--require",
-        "support/**/*.ts"
-      ],
-      "env": {
-        "LOGIN": "tu_user",
-        "PASS": "tu_pass"
-      },
-      "sourceMaps": true,
-      "resolveSourceMapLocations": [
-        "${workspaceFolder}/**",
-        "!**/node_modules/**"
-      ],
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
-      "console": "integratedTerminal"
+      "name": "Debug BAM Runner",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "test"],
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "internalConsoleOptions": "neverOpen"
     }
   ]
 }
+
