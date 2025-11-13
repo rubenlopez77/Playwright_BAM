@@ -1,13 +1,18 @@
 import { BaseComponent } from './base.component';
 
+
 export class AlertComponent extends BaseComponent {
+  constructor(context) {
+    super(context, '#alert', 'Alert');
+  }
+
   /**
    * Espera un alert nativo del navegador y valida que su texto
    * contenga alguno de los patrones esperados (case-insensitive).
    * Permite múltiples textos válidos.
    */
-  expectTexts(expected: string | string[]) {
-    const waitForDialog = this.world.page.waitForEvent('dialog', { timeout: 5000 });
+  expectModalText(expected: string | string[]) {
+    const waitForDialog = this.context.page.waitForEvent('dialog', { timeout: 5000 });
     const patterns = Array.isArray(expected)
       ? expected.map(e => e.trim().toLowerCase())
       : [expected.trim().toLowerCase()];

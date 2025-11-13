@@ -1,12 +1,12 @@
 import { ExecutionContext } from '../support/execution-context';
 
 export abstract class BaseComponent {
-  protected readonly world: ExecutionContext;
+  protected readonly context: ExecutionContext;
   protected readonly selector: string;
   protected readonly name: string;
 
   constructor(world: ExecutionContext, selector: string, name: string) {
-    this.world = world;
+    this.context = world;
     this.selector = selector;
     this.name = name;
   }
@@ -25,8 +25,8 @@ export abstract class BaseComponent {
    * - Mantiene API declarativa sin await en Pages
    */
   protected run(actionName: string, actionFn: (page: any) => Promise<void>) {
-    this.world.enqueue(async () => {
-      const { page, logger } = this.world;
+    this.context.enqueue(async () => {
+      const { page, logger } = this.context;
       const start = performance.now();
 
       try {

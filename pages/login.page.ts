@@ -7,34 +7,23 @@ import { CredentialSet } from '../data/credentials.data';
 import { LoginLocators } from '../ux/login.ux'; 
 
 import { WaitComponent } from '../components/wait.component';
-
 export class LoginPage {
-  private readonly context: ExecutionContext;
-  private readonly modal: ModalComponent;
-  private readonly loginButton: ButtonComponent;
-  private readonly username: TextboxComponent;
-  private readonly password: TextboxComponent;
-  private readonly userDisplay: WaitComponent;
-  private readonly submitButton: ButtonComponent;
-
-
-
-
-  constructor(context: ExecutionContext) {
-    this.context = context;
-    this.loginButton = new ButtonComponent(context, LoginLocators.LOGIN_BUTTON.selector, 'Loginbutton');
-    this.modal = new ModalComponent(context, LoginLocators.MODAL.selector, 'LoginModal');
-    this.username = new TextboxComponent(context, LoginLocators.USERNAME.selector, 'UsernameField');
-    this.password = new TextboxComponent(context, LoginLocators.PASSWORD.selector, 'PasswordField');
-    this.userDisplay = new WaitComponent(context, LoginLocators.USER_DISPLAY.selector, 'UserDisplay');
-    this.submitButton = new ButtonComponent(context, LoginLocators.SUBMIT.selector, 'SubmitButton');
-   
-  }
+  constructor(
+    private readonly context: ExecutionContext,
+    private readonly loginButton = new ButtonComponent(context, LoginLocators.LOGIN_BUTTON.selector, 'LoginButton'),
+    private readonly modal = new ModalComponent(context, LoginLocators.MODAL.selector, 'LoginModal'),
+    private readonly username = new TextboxComponent(context, LoginLocators.USERNAME.selector, 'UsernameField'),
+    private readonly password = new TextboxComponent(context, LoginLocators.PASSWORD.selector, 'PasswordField'),
+    private readonly userDisplay = new WaitComponent(context, LoginLocators.USER_DISPLAY.selector, 'UserDisplay'),
+    private readonly submitButton = new ButtonComponent(context, LoginLocators.SUBMIT.selector, 'SubmitButton'),
+    private readonly alert = new AlertComponent(context)
+  ) {}
 
 
   // Acción de login
   loginWith(set: CredentialSet) {
     this.loginButton.click();
+    this.modal.waitVisible();
     this.username.fill(set.username);
     this.password.fill(set.password);
     this.submitButton.click();
@@ -47,11 +36,9 @@ export class LoginPage {
     this.userDisplay.waitForNonEmptyText();
     this.userDisplay.waitForText(username); 
 
-
   }
   // Espera que aparezca un alert con mensaje de error 
-  expectLogError() {
-    const alert = new AlertComponent(this.context, '', 'Alert');
-    alert.expectTexts('Wrong password');
+  expectLogError() { 
+    this.alert.expectModalText('Wrong password');
   }
 }
