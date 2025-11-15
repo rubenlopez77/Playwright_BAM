@@ -1,4 +1,4 @@
-import { ExecutionContext } from '../support/execution-context';
+import { ExecutionContext } from '../support/world';
 import { ModalComponent } from '../components/modal.component';
 import { TextboxComponent } from '../components/textbox.component';
 import { ButtonComponent } from '../components/button.component';

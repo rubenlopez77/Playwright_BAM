@@ -1,4 +1,6 @@
-import { ExecutionContext } from '../support/execution-context';
+// components/base.component.ts
+import { ExecutionContext } from '../support/world';
+import { BamLogger } from '../support/logger/bam.logger';
 
 export abstract class BaseComponent {
   protected readonly context: ExecutionContext;
@@ -11,47 +13,66 @@ export abstract class BaseComponent {
     this.name = name;
   }
 
-
   public get selectorValue(): string {
     return this.selector;
   }
+
+  // -------------------------------
+  // Alias compatible con BAM v1.x
+  // -------------------------------
   public execute(actionName: string, fn: (page: any) => Promise<void>) {
     this.run(actionName, fn);
   }
 
-  /**
-   * Método universal BAM para ejecutar acciones de Component Layer.
-   * - Aísla await dentro del runner determinista
-   * - Mantiene API declarativa sin await en Pages
-   */
+  // -------------------------------
+  // Core BAM v2 runner
+  // -------------------------------
   protected run(actionName: string, actionFn: (page: any) => Promise<void>) {
+
     this.context.enqueue(async () => {
-      const { page, logger } = this.context;
+      const ctx     = this.context;
+      const tracer  = ctx.logger;
+      const browser = ctx.browserName;
+      const page    = ctx.page;
+
       const start = performance.now();
 
       try {
         await actionFn(page);
-
         const duration = performance.now() - start;
 
-        // JSON / métricas
-        logger.logAction(this.name, actionName, this.selector, duration, true);
+        // JSON (siempre)
+        tracer.recordComponentAction(
+          this.name,
+          actionName,
+          this.selector,
+          duration,
+          true
+        );
 
-        // Log
-        logger.logTiming(this.name, actionName, duration, true);
+        // LOG opcional
+        if (BamLogger.enabled) {
+          BamLogger.printComponentAction(this.name, actionName, duration, browser, true);
+        }
 
       } catch (error) {
-        const duration = performance.now() - start;
- 
-        logger.logAction(this.name, actionName, this.selector, duration, false);
 
-        // En caso de error lo muestra en terminal
-        logger.logError(this.name, actionName, error);
+        const duration = performance.now() - start;
+
+        tracer.recordComponentAction(
+          this.name,
+          actionName,
+          this.selector,
+          duration,
+          false
+        );
+
+        if (BamLogger.enabled) {
+          BamLogger.printComponentAction(this.name, actionName, duration, browser, false);
+        }
 
         throw error;
       }
     });
   }
-  
-
 }

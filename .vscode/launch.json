@@ -4,13 +4,30 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug BAM Runner",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "test"],
-      "console": "integratedTerminal",
+      "name": "Debug BAM (worker 0)",
+      "program": "${workspaceFolder}/node_modules/@cucumber/cucumber/bin/cucumber-js",
+"args": [
+  "features",
+  "--require-module", "ts-node/register",
+  "--require", "support/world.ts",
+  "--require", "support/hooks.ts",
+  "--require", "support/logger/scenario.logger.ts",
+  "--require", "steps/**/*.ts"
+],
+
       "cwd": "${workspaceFolder}",
+
+      "env": {
+        "CUCUMBER_WORKER_ID": "0",
+        "DEBUG": "true"
+      },
+
+      "runtimeArgs": ["--inspect-brk"],
+      "console": "integratedTerminal",
+
+      "sourceMaps": true,
+      "skipFiles": ["<node_internals>/**"],
       "internalConsoleOptions": "neverOpen"
     }
   ]
 }
-

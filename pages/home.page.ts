@@ -3,7 +3,7 @@
  * Mejora la mantenibilidad y permite trazabilidad de elementos UI.
  * Para este ejemplo se separa intencionadamente Login de Home por cuestiones demostrativas.
  */
-import { ExecutionContext } from '../support/execution-context';
+import { ExecutionContext } from '../support/world';
 import { NavigationComponent } from '../components/navigation.component';
 import { WaitComponent } from '../components/wait.component';
 import { EnvConfig } from '../support/env';

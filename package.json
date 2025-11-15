@@ -2,7 +2,7 @@
   "name": "playwright-cucumber-ts",
   "version": "1.0.0",
   "scripts": {
-    "test": "cucumber-js features --require-module ts-node/register --require steps/**/*.ts --require support/**/*.ts",
+    "test": "cucumber-js",
     "build:tools": "npm --prefix tools/eslint-plugin-bam-ux run build",
     "lint:tests": "eslint \"steps/**/*.ts\"",
     "validate:ux": "ts-node scripts/validate-uxmaps.ts",
@@ -10,7 +10,8 @@
   },
   "dependencies": {
     "@cucumber/cucumber": "^10.2.1",
-    "dotenv": "^17.2.3",
+    "@cucumber/pretty-formatter": "^2.4.1",
+    "dotenv": "^16.4.5",
     "playwright": "^1.56.1"
   },
   "devDependencies": {
