@@ -170,6 +170,16 @@ export class BmsTagParser {
           metadata.testOracle = this.normalizeText(value);
           break;
 
+        case key === "EXPECTED" || key.startsWith("EXPECTED"):
+        
+        case key.startsWith("EXP"):
+        {
+          if (!metadata.expectedResults) {
+            metadata.expectedResults = [];
+          }
+          metadata.expectedResults.push(this.normalizeText(value));
+          break;
+}
         case key === "CONDITIONS":
         case key === "TESTCONDITIONS":
           metadata.testConditions!.push(this.normalizeText(value));

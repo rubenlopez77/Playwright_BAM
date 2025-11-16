@@ -66,6 +66,7 @@ export interface BamMetadata {
   // IEEE 29119-3 / ISTQB
   testOracle?: string;
   testConditions?: string[];
+  expectedResults?: string[];  // IEEE 29119 - resultados esperados
   testCaseObjective?: string;
 
   testLevel?: BamTestLevel;
@@ -152,6 +153,11 @@ export interface BamMaintainabilityMetrics {
 export interface BamFunctionalSuitabilityMetrics {
   requirementsCovered?: string[];
   acCovered?: number;
+    coverageContext?: {
+    acTotal?: number;
+    acCovered?: number;
+    acCoveragePercentage?: number; // 0..100
+  };
 }
 
 export interface BamMetrics {

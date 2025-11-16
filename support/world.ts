@@ -5,18 +5,21 @@ import { chromium, firefox, webkit } from "playwright";
 import { EnvConfig } from "./env";
 import { BamLogger } from "./logger/bam.logger";
 import { BamTracer } from "./logger/bam.tracer";
-import { IBamTracer } from "./logger/bam.tracer.types";
 
+//
+// -----------------------------------------------------------------------------
+// EXECUTION CONTEXT (Core runtime for BAM)
+// -----------------------------------------------------------------------------
 export class ExecutionContext {
 
   browser!: any;
   context!: any;
   page!: any;
 
-  // 🔹 Ahora expresamente un tracer, no un "logger"
-  tracer!: IBamTracer;
-  browserName!: string;
+  // 🔹 Ahora el tracer tiene tipo concreto (no interfaz)
+  tracer!: BamTracer;
 
+  browserName!: string;
   workerId!: number;
 
   private queue: Array<() => Promise<void>> = [];
@@ -31,7 +34,7 @@ export class ExecutionContext {
   async init() {
     if (this.initialized) return;
 
-    // 🔹 Inyección de implementación, pero tipeada por la interfaz
+    // Inyección de implementación real
     this.tracer = new BamTracer(this.browserName, this.workerId);
 
     const map = { chromium, firefox, webkit };
@@ -61,23 +64,24 @@ export class ExecutionContext {
     this.initialized = false;
   }
 
-  getPage<T>(PageClass: new (w: ExecutionContext) => T): T {
+  getPage<T>(PageClass: new (ctx: ExecutionContext) => T): T {
     const key = PageClass.name;
     if (!this.pageInstances.has(key)) {
       this.pageInstances.set(key, new PageClass(this));
     }
-    return this.pageInstances.get(key);
+    return this.pageInstances.get(key)!;
   }
 
-  // 🔹 Compatibilidad hacia atrás: si alguien usa context.logger, sigue funcionando
-  get logger(): IBamTracer {
+  // Compatibilidad hacia atrás: this.logger sigue funcionando
+  get logger(): BamTracer {
     return this.tracer;
   }
 }
 
-// =====================================================
-// ExecutionContextFactory
-// =====================================================
+//
+// -----------------------------------------------------------------------------
+// EXECUTION CONTEXT FACTORY (Singleton per worker)
+// -----------------------------------------------------------------------------
 export class ExecutionContextFactory {
   private static instance: ExecutionContext | null = null;
 
@@ -88,7 +92,7 @@ export class ExecutionContextFactory {
   static async getOrCreate(): Promise<ExecutionContext> {
     if (!this.instance) {
       const workerId = Number(process.env.CUCUMBER_WORKER_ID ?? "0");
-      const browser  = EnvConfig.BROWSER[workerId] ?? EnvConfig.MAIN_BROWSER;
+      const browser = EnvConfig.BROWSER[workerId] ?? EnvConfig.MAIN_BROWSER;
 
       BamLogger.printWorkerInit(workerId, browser);
 
@@ -108,22 +112,21 @@ export class ExecutionContextFactory {
 
   static async close() {
     if (!this.instance) return;
-
     await this.instance.close();
     this.instance = null;
   }
 }
 
-// =====================================================
+//
+// -----------------------------------------------------------------------------
 // BAM WORLD (Cucumber World)
-// =====================================================
+// -----------------------------------------------------------------------------
 
-// Nombre más enterprise, pero mantenemos alias para no romper imports
 export class BamCucumberWorld {
 
   private _ctx?: ExecutionContext;
 
-  // NOSONAR: Cucumber necesita constructor síncrono vacío
+  // NOSONAR — Cucumber exige constructor síncrono vacío
   constructor() {}
 
   async init() {
@@ -136,9 +139,11 @@ export class BamCucumberWorld {
   }
 
   get page() { return this.context.page; }
+
+  // 🔹 Nuevo acceso explícito
   get tracer() { return this.context.tracer; }
 
-  // 🔹 Compat: this.logger sigue funcionando en steps antiguos
+  // 🔹 Compatibilidad hacia atrás
   get logger() { return this.context.tracer; }
 
   get browserName() { return this.context.browserName; }
@@ -147,12 +152,14 @@ export class BamCucumberWorld {
   enqueue(fn: () => Promise<void>) { this.context.enqueue(fn); }
   flush() { return this.context.flush(); }
 
-  getPage<T>(PageClass: new (w: ExecutionContext) => T): T {
+  getPage<T>(PageClass: new (ctx: ExecutionContext) => T): T {
     return this.context.getPage(PageClass);
   }
 }
 
-// Alias para mantener compatibilidad con cualquier import existente
+//
+// Alias de compatibilidad
+//
 export { BamCucumberWorld as BamWorld };
 
 setWorldConstructor(BamCucumberWorld);

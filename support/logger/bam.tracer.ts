@@ -1,79 +1,21 @@
 // support/logger/bam.tracer.ts
 import fs from "node:fs/promises";
-import { IBamTracer } from "./bam.tracer.types";
 import {
-  BamAction,
+  BamEvent,
+  ScenarioStartEvent,
+  ScenarioEndEvent,
   BamExecution,
-  BamExecutionReport,
   BamMetadata,
+  BamAction,
+  BamStep,
   BamMetrics,
-  BamResolvedTestDataEntry,
-  BamStatus,
-  BamStep
-} from "./bms.types";
+  BamExecutionReport,
+  BamTestSession
+} from "./bam.tracer.types";
+
 import { BmsTagParser } from "./bms.tag-parser";
-import { TestDataRepository } from "../testdata.repository";
 
-// ============================================================
-// EVENT TYPES
-// ============================================================
-
-type BamEventType = "component" | "scenario-start" | "scenario-end" | "step";
-
-interface BaseEvent {
-  timestamp: string;
-  type: BamEventType;
-  browser: string;
-  worker: number;
-}
-
-interface ComponentEvent extends BaseEvent {
-  type: "component";
-  component: string;
-  action: string;
-  selector: string;
-  duration: number;
-  success: boolean;
-}
-
-interface ScenarioStartEvent extends BaseEvent {
-  type: "scenario-start";
-  scenario: string;
-  feature?: string;
-  tags?: string[];
-}
-
-interface ScenarioEndEvent extends BaseEvent {
-  type: "scenario-end";
-  scenario: string;
-  status: string;
-}
-
-interface StepEvent extends BaseEvent {
-  type: "step";
-  text: string;
-  status: string;
-}
-
-type BamEvent =
-  | ComponentEvent
-  | ScenarioStartEvent
-  | ScenarioEndEvent
-  | StepEvent;
-
-interface ScenarioContext {
-  start: ScenarioStartEvent;
-  end?: ScenarioEndEvent;
-  steps: StepEvent[];
-  actions: ComponentEvent[];
-}
-
-// ============================================================
-// TRACER IMPLEMENTATION
-// ============================================================
-
-export class BamTracer implements IBamTracer {
-
+export class BamTracer {
   private readonly events: BamEvent[] = [];
   private readonly browserName: string;
   private readonly workerId: number;
@@ -84,7 +26,7 @@ export class BamTracer implements IBamTracer {
   }
 
   // ============================================================
-  // RECORD EVENTS
+  // EVENT RECORDERS
   // ============================================================
 
   recordComponentAction(
@@ -93,7 +35,7 @@ export class BamTracer implements IBamTracer {
     selector: string,
     duration: number,
     success: boolean
-  ): void {
+  ) {
     this.events.push({
       timestamp: new Date().toISOString(),
       type: "component",
@@ -107,7 +49,7 @@ export class BamTracer implements IBamTracer {
     });
   }
 
-  recordScenarioStart(name: string, feature?: string, tags?: string[]): void {
+  recordScenarioStart(name: string, feature?: string, tags?: string[]) {
     this.events.push({
       timestamp: new Date().toISOString(),
       type: "scenario-start",
@@ -119,7 +61,7 @@ export class BamTracer implements IBamTracer {
     });
   }
 
-  recordScenarioEnd(name: string, status: string): void {
+  recordScenarioEnd(name: string, status: string) {
     this.events.push({
       timestamp: new Date().toISOString(),
       type: "scenario-end",
@@ -130,7 +72,7 @@ export class BamTracer implements IBamTracer {
     });
   }
 
-  recordStepEnd(text: string, status: string): void {
+  recordStepEnd(text: string, status: string) {
     this.events.push({
       timestamp: new Date().toISOString(),
       type: "step",
@@ -141,313 +83,211 @@ export class BamTracer implements IBamTracer {
     });
   }
 
-  getEvents(): BamEvent[] {
+  getEvents() {
     return this.events;
   }
 
   // ============================================================
-  // RAW + STRUCTURED WRITERS
+  // WRITE RAW / STRUCTURED LOGS
   // ============================================================
 
-  async writeRaw(path: string): Promise<void> {
+  async writeRaw(path: string) {
     await fs.writeFile(path, JSON.stringify(this.events, null, 2));
   }
 
-  async writeStructured(path: string): Promise<void> {
+  async writeStructured(path: string) {
     const structured = {
       browser: this.browserName,
       worker: this.workerId,
       totalEvents: this.events.length,
-      events: this.events,
+      events: this.events
     };
+
     await fs.writeFile(path, JSON.stringify(structured, null, 2));
   }
 
   // ============================================================
-  // BUILD EXECUTION REPORTS (BMS)
+  // BUILD BMS REPORTS (uno por escenario)
   // ============================================================
 
-  buildExecutionReports(): BamExecutionReport[] {
-    const reports: BamExecutionReport[] = [];
-    let current: ScenarioContext | undefined;
+  async writeBmsReports(baseDir: string) {
+    const reports = this.buildExecutionReports();
 
-    for (const event of this.events) {
+    for (const [index, report] of reports.entries()) {
+      const id = report.metadata.id || `scenario-${index + 1}`;
+      const safeId = id.replace(/[^\w-]+/g, "_"); // seguro para filenames
+      const path = `${baseDir}/${safeId}.json`;
 
-      if (this.isScenarioStart(event)) {
-        current = this.handleScenarioStart(event, current, reports);
-        continue;
-      }
-
-      if (!current) continue;
-
-      if (this.isStep(event)) {
-        current.steps.push(event);
-        continue;
-      }
-
-      if (this.isComponent(event)) {
-        current.actions.push(event);
-        continue;
-      }
-
-      if (this.isScenarioEnd(event, current)) {
-        this.handleScenarioEnd(event, current, reports);
-        current = undefined;
-      }
+      await fs.writeFile(path, JSON.stringify(report, null, 2));
     }
+  }
 
-    if (current) {
-      reports.push(this.buildReportFromContext(current));
+  // ============================================================
+  // PRIVATE – HIGH-LEVEL REPORT BUILDER
+  // ============================================================
+
+  public buildExecutionReports(): BamExecutionReport[] {
+    const reports: BamExecutionReport[] = [];
+    const events = this.events;
+
+    const scenarioStarts = events.filter(e => e.type === "scenario-start") as ScenarioStartEvent[];
+
+    for (const startEvt of scenarioStarts) {
+      const endEvt = this.findScenarioEnd(startEvt.scenario);
+
+      const scenarioEvents = this.events.filter(
+        e => e.timestamp >= startEvt.timestamp &&
+             (!endEvt || e.timestamp <= endEvt.timestamp)
+      );
+
+      const metadata = this.buildMetadata(startEvt);
+      const execution = this.buildExecution(startEvt, endEvt);
+      const steps = this.buildSteps(scenarioEvents);
+      const actions = this.buildActions(scenarioEvents, startEvt.scenario);
+      const metrics = this.buildMetrics(metadata, actions, steps);
+
+      const report: BamExecutionReport = {
+        testSession: this.buildTestSession(),
+        metadata,
+        execution,
+        steps,
+        actions,
+        metrics
+      };
+
+      reports.push(report);
     }
 
     return reports;
   }
 
-  // Predicates
-  private isScenarioStart(e: BamEvent): e is ScenarioStartEvent {
-    return e.type === "scenario-start";
-  }
-
-  private isScenarioEnd(e: BamEvent, ctx: ScenarioContext): e is ScenarioEndEvent {
-    return e.type === "scenario-end" && e.scenario === ctx.start.scenario;
-  }
-
-  private isStep(e: BamEvent): e is StepEvent {
-    return e.type === "step";
-  }
-
-  private isComponent(e: BamEvent): e is ComponentEvent {
-    return e.type === "component";
-  }
-
-  // Context helpers
-  private handleScenarioStart(
-    evt: ScenarioStartEvent,
-    current: ScenarioContext | undefined,
-    reports: BamExecutionReport[]
-  ): ScenarioContext {
-    if (current) {
-      reports.push(this.buildReportFromContext(current));
-    }
-    return {
-      start: evt,
-      steps: [],
-      actions: []
-    };
-  }
-
-  private handleScenarioEnd(
-    evt: ScenarioEndEvent,
-    current: ScenarioContext,
-    reports: BamExecutionReport[]
-  ): void {
-    current.end = evt;
-    reports.push(this.buildReportFromContext(current));
-  }
-
   // ============================================================
-  // BUILD ONE SCENARIO REPORT
+  // PRIVATE HELPERS
   // ============================================================
 
-  private buildReportFromContext(ctx: ScenarioContext): BamExecutionReport {
-    const startEvt = ctx.start;
-    const startTime = startEvt.timestamp;
-    const endTime = this.resolveEndTime(ctx);
-    const durationMs = this.safeDurationMs(startTime, endTime);
+  private findScenarioEnd(name: string): ScenarioEndEvent | undefined {
+    const matches = this.events.filter(
+      e => e.type === "scenario-end" && (e as ScenarioEndEvent).scenario === name
+    ) as ScenarioEndEvent[];
 
+    return matches.at(-1); // Prefer .at() over [...].length - 1
+  }
+
+  private buildMetadata(startEvt: ScenarioStartEvent): BamMetadata {
     const metadata: BamMetadata = BmsTagParser.fromTags(
-      startEvt.tags,
+      startEvt.tags ?? [],
       startEvt.scenario,
       startEvt.feature
     );
 
-    // Test data enriquecido: parameter/value/source/masked
-    const resolvedEntries: BamResolvedTestDataEntry[] = [];
-
-    if (metadata.testData && metadata.testData.length > 0) {
-      for (const id of metadata.testData) {
-        try {
-          const data = TestDataRepository.resolve(id);
-          if (data && typeof data === "object") {
-            for (const [key, value] of Object.entries(data)) {
-              if (key.toLowerCase() === "description") continue;
-              const masked = this.isSensitiveKey(key);
-              resolvedEntries.push({
-                parameter: key,
-                value,
-                source: id,
-                masked
-              });
-            }
-          } else {
-            resolvedEntries.push({
-              parameter: id,
-              value: data,
-              source: id,
-              masked: false
-            });
-          }
-        } catch (err) {
-          resolvedEntries.push({
-            parameter: id,
-            value: (err as Error).message,
-            source: id,
-            masked: false
-          });
-        }
-      }
+    // Inferencia de Test Oracle si no existe
+    if (!metadata.testOracle && metadata.acceptanceCriteria && metadata.acceptanceCriteria.length > 0) {
+      metadata.testOracle = `Primary oracle: ${metadata.acceptanceCriteria[0]}`;
     }
 
-    if (resolvedEntries.length > 0) {
-      metadata.resolvedTestData = resolvedEntries;
-    }
+    return metadata;
+  }
 
-    const status = this.computeScenarioStatus(ctx);
-
-    const execution: BamExecution = {
-      browser: this.browserName,
-      worker: this.workerId,
-      status,
-      startTime,
-      endTime,
-      durationMs
-    };
-
-    const steps: BamStep[] = ctx.steps.map((s) => ({
-      text: s.text,
-      status: this.mapStatus(s.status),
-      timestamp: s.timestamp
-    }));
-
-    const actions: BamAction[] = ctx.actions.map((a) => ({
-      component: a.component,
-      action: a.action,
-      selector: a.selector,
-      duration: a.duration,
-      success: a.success,
-      timestamp: a.timestamp
-    }));
-
-    const metrics: BamMetrics = this.buildMetrics(
-      metadata,
-      steps,
-      actions,
-      durationMs
-    );
+  private buildExecution(startEvt: ScenarioStartEvent, endEvt?: ScenarioEndEvent): BamExecution {
+    const startTime = startEvt.timestamp;
+    const endTime = endEvt?.timestamp ?? startTime;
+    const duration = new Date(endTime).getTime() - new Date(startTime).getTime();
 
     return {
-      metadata,
-      execution,
-      steps,
-      actions,
-      metrics
+      browser: this.browserName,
+      worker: this.workerId,
+      status: this.mapStatus(endEvt?.status),
+      startTime,
+      endTime,
+      durationMs: duration
     };
   }
 
-  private resolveEndTime(ctx: ScenarioContext): string {
-    if (ctx.end?.timestamp) return ctx.end.timestamp;
-
-    const timestamps = [
-      ...ctx.steps.map(s => s.timestamp),
-      ...ctx.actions.map(a => a.timestamp)
-    ];
-
-    return timestamps.at(-1) ?? ctx.start.timestamp;
+  private mapStatus(status?: string): "PASSED" | "FAILED" | "SKIPPED" {
+    if (!status) return "UNKNOWN" as any;
+    const st = status.toUpperCase();
+    if (st.includes("PASSED")) return "PASSED";
+    if (st.includes("FAILED")) return "FAILED";
+    if (st.includes("SKIPPED")) return "SKIPPED";
+    return "UNKNOWN" as any;
   }
 
-  private safeDurationMs(startIso: string, endIso: string): number {
-    const start = Date.parse(startIso);
-    const end = Date.parse(endIso);
-    if (Number.isNaN(start) || Number.isNaN(end)) return 0;
-    return Math.max(0, end - start);
+  private buildSteps(events: BamEvent[]): BamStep[] {
+    return events
+      .filter(e => e.type === "step")
+      .map(e => ({
+        text: (e as any).text,
+        status: (e as any).status,
+        timestamp: e.timestamp
+      }));
   }
 
-  private mapStatus(status: string): BamStatus {
-    const n = status.toUpperCase();
-    if (n === "PASSED") return "PASSED";
-    if (n === "FAILED") return "FAILED";
-    if (n === "SKIPPED") return "SKIPPED";
-    return "UNKNOWN";
-  }
-
-  private computeScenarioStatus(ctx: ScenarioContext): BamStatus {
-    if (ctx.end?.status) {
-      return this.mapStatus(ctx.end.status);
-    }
-
-    const upper = ctx.steps.map(s => s.status.toUpperCase());
-    if (upper.includes("FAILED")) return "FAILED";
-    if (upper.includes("PASSED")) return "PASSED";
-    if (upper.includes("SKIPPED")) return "SKIPPED";
-    return "UNKNOWN";
+  private buildActions(events: BamEvent[], scenario: string): BamAction[] {
+    return events
+      .filter(e => e.type === "component")
+      .map(e => ({
+        component: (e as any).component,
+        action: (e as any).action,
+        selector: (e as any).selector,
+        duration: (e as any).duration,
+        success: (e as any).success,
+        timestamp: e.timestamp,
+        boundStep: scenario
+      }));
   }
 
   private buildMetrics(
     metadata: BamMetadata,
-    steps: BamStep[],
     actions: BamAction[],
-    durationMs: number
+    steps: BamStep[]
   ): BamMetrics {
-    const actionsCount = actions.length;
-    const stepsCount = steps.length;
+    const totalDuration = actions.reduce((acc, a) => acc + a.duration, 0);
+    const avgDuration = actions.length > 0 ? totalDuration / actions.length : 0;
 
-    const avgActionDurationMs = actionsCount
-      ? actions.reduce((acc, a) => acc + a.duration, 0) / actionsCount
-      : 0;
-
-    const componentsUsed = Array.from(new Set(actions.map(a => a.component)));
-
-    const failedSteps = steps.filter(s => s.status === "FAILED").length;
-    const failRate = stepsCount ? failedSteps / stepsCount : 0;
+    // Coverage context for AC
+    const acTotal = metadata.acceptanceCriteria?.length ?? 0;
+    const acCovered = acTotal; // 1 escenario = 1 caso = cubre todos sus AC
 
     return {
       performance: {
-        totalDurationMs: durationMs,
-        avgActionDurationMs
+        totalDurationMs: totalDuration,
+        avgActionDurationMs: avgDuration
       },
       efficiency: {
-        actionsCount,
-        stepsCount
+        actionsCount: actions.length,
+        stepsCount: steps.length
       },
       maintainability: {
-        componentsUsed
-      },
-      functionalSuitability: {
-        requirementsCovered: metadata.requirements,
-        acCovered: metadata.acceptanceCriteria?.length
+        componentsUsed: [...new Set(actions.map(a => a.component))]
       },
       reliability: {
-        status: failedSteps > 0 ? "UNSTABLE" : "STABLE",
-        failRate
+        status: actions.some(a => !a.success) ? "UNSTABLE" : "STABLE",
+        failRate: actions.filter(a => !a.success).length / (actions.length || 1)
+      },
+      functionalSuitability: {
+        requirementsCovered: metadata.requirements ?? [],
+        acCovered,
+        coverageContext: acTotal > 0
+          ? {
+              acTotal,
+              acCovered,
+              acCoveragePercentage: (acCovered / acTotal) * 100
+            }
+          : undefined
       }
     };
   }
 
-  private isSensitiveKey(name: string): boolean {
-    const n = name.toLowerCase();
-    return (
-      n.includes("pass") ||
-      n.includes("pwd") ||
-      n.includes("token") ||
-      n.includes("secret")
-    );
-  }
-
-  // ============================================================
-  // WRITE BMS REPORTS PER SCENARIO
-  // ============================================================
-
-  async writeBmsReports(baseDir: string): Promise<void> {
-    const reports = this.buildExecutionReports();
-    if (reports.length === 0) return;
-
-    await fs.mkdir(baseDir, { recursive: true });
-
-    for (const [index, report] of reports.entries()) {
-      const id = report.metadata.id || `scenario-${index + 1}`;
-      const safeId = id.replace(/[^\w-]+/g, "_");
-      const path = `${baseDir}/${safeId}.json`;
-      await fs.writeFile(path, JSON.stringify(report, null, 2));
-    }
+  private buildTestSession(): BamTestSession {
+    return {
+      testPlan: process.env.BAM_PLAN,
+      testCycle: process.env.BAM_CYCLE,
+      testRun: process.env.BAM_RUN_ID,
+      tester: process.env.BAM_TESTER,
+      executionEnvironment:
+        process.env.TEST_ENV ||
+        process.env.BAM_ENV ||
+        "LOCAL"
+    };
   }
 }

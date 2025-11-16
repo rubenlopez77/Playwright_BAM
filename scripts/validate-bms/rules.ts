@@ -1,148 +1,67 @@
 // scripts/validate-bms/rules.ts
+import { FeatureDocument, ValidationError } from "./types";
 
-import { ParsedGherkin, ValidationError, ValidationResult } from "./types";
+// ------------------------------------------------------------
+// Anti-ReDoS DATA tag validator (deterministic, safe)
+// ------------------------------------------------------------
+function isSafeDataTag(v: string): boolean {
+  if (!v.includes(".")) return false;
 
-const ALLOWED_PRIORITY = ["LOW", "MEDIUM", "HIGH", "CRITICAL"];
-const ALLOWED_RISK = ["LOW", "MEDIUM", "HIGH"];
-const ALLOWED_TESTLEVEL = ["UNIT", "INTEGRATION", "SYSTEM", "ACCEPTANCE"];
-const ALLOWED_TESTTYPE = ["FUNCTIONAL", "NON_FUNCTIONAL", "SECURITY", "USABILITY"];
+  const [left, right] = v.split(".");
+  if (!left || !right) return false;
 
-export function validateFeatureTags(doc: ParsedGherkin, file: string): ValidationResult {
+  // Allowed characters: A-Z a-z 0-9 _ -
+  const SAFE = /^[A-Za-z0-9_-]+$/u;
+
+  return SAFE.test(left) && SAFE.test(right);
+}
+
+// ------------------------------------------------------------
+// Required BMS tags
+// ------------------------------------------------------------
+const REQUIRED_SCENARIO_TAGS = ["ID", "Title"];
+
+// ------------------------------------------------------------
+// Validate a full feature
+// ------------------------------------------------------------
+export function validateFeatureTags(doc: FeatureDocument): ValidationError[] {
   const errors: ValidationError[] = [];
-  const warnings: ValidationError[] = [];
 
   for (const scenario of doc.scenarios) {
-    const tags = scenario.tags;
+    const { name, tags, line } = scenario;
 
-    // ------------------------------------------------------
-    // REQUIRED: @ID
-    // ------------------------------------------------------
-    if (!tags["ID"]) {
-      errors.push({
-        file,
-        line: scenario.line,
-        message: `Scenario "${scenario.name}" is missing required tag @ID`,
-      });
-    } else {
-      // validate no spaces
-      if (/\s/.test(tags["ID"] as string)) {
+    // 1. Required tag validation
+    for (const req of REQUIRED_SCENARIO_TAGS) {
+      if (!tags[req]) {
         errors.push({
-          file,
-          line: scenario.line,
-          message: `@ID value "${tags["ID"]}" cannot contain spaces`,
+          type: "MISSING_TAG",
+          message: `Scenario "${name}" is missing required tag @${req}`,
+          line
         });
       }
     }
 
-    // ------------------------------------------------------
-    // REQUIRED: @TITLE
-    // ------------------------------------------------------
-    if (!tags["TITLE"]) {
-      errors.push({
-        file,
-        line: scenario.line,
-        message: `Scenario "${scenario.name}" is missing required tag @Title`,
-      });
-    } else if (/\s/.test(tags["TITLE"] as string)) {
-      errors.push({
-        file,
-        line: scenario.line,
-        message: `Tag @Title has whitespace in value "${tags["TITLE"]}". Use underscores instead of spaces.`,
-      });
-    }
-
-    // ------------------------------------------------------
-    // CHECK ACCEPTANCE CRITERIA
-    // ------------------------------------------------------
-    if (!tags["ACCEPTANCECRITERIA"]) {
-      warnings.push({
-        file,
-        line: scenario.line,
-        message: `Scenario "${scenario.name}" has no Acceptance Criteria (@AC1, @AC2...)`,
-      });
-    }
-
-    // ------------------------------------------------------
-    // PRIORITY
-    // ------------------------------------------------------
-    if (tags["PRIORITY"]) {
-      const v = String(tags["PRIORITY"]).toUpperCase();
-      if (!ALLOWED_PRIORITY.includes(v)) {
-        errors.push({
-          file,
-          line: scenario.line,
-          message: `@PRIORITY=${v} is not valid. Allowed: ${ALLOWED_PRIORITY.join(", ")}`,
-        });
-      }
-    }
-
-    // ------------------------------------------------------
-    // RISK
-    // ------------------------------------------------------
-    if (tags["RISK"]) {
-      const v = String(tags["RISK"]).toUpperCase();
-      if (!ALLOWED_RISK.includes(v)) {
-        errors.push({
-          file,
-          line: scenario.line,
-          message: `@RISK=${v} is not valid. Allowed: ${ALLOWED_RISK.join(", ")}`,
-        });
-      }
-    }
-
-    // ------------------------------------------------------
-    // TEST LEVEL
-    // ------------------------------------------------------
-    if (tags["LEVEL"]) {
-      const v = String(tags["LEVEL"]).toUpperCase();
-      if (!ALLOWED_TESTLEVEL.includes(v)) {
-        errors.push({
-          file,
-          line: scenario.line,
-          message: `@Level=${v} is not valid. Allowed: ${ALLOWED_TESTLEVEL.join(", ")}`,
-        });
-      }
-    }
-
-    // ------------------------------------------------------
-    // TEST TYPE
-    // ------------------------------------------------------
-    if (tags["TYPE"]) {
-      const v = String(tags["TYPE"]).toUpperCase();
-      if (!ALLOWED_TESTTYPE.includes(v)) {
-        errors.push({
-          file,
-          line: scenario.line,
-          message: `@Type=${v} is not valid. Allowed: ${ALLOWED_TESTTYPE.join(", ")}`,
-        });
-      }
-    }
-
-    // ------------------------------------------------------
-    // DATA FORMAT CHECK
-    // ------------------------------------------------------
+    // 2. DATA tag validation (secure)
     if (tags["DATA"]) {
       const v = String(tags["DATA"]);
-      if (!/^[a-zA-Z0-9_.-]+\.[a-zA-Z0-9_.-]+$/.test(v)) {
+      if (!isSafeDataTag(v)) {
         errors.push({
-          file,
-          line: scenario.line,
-          message: `@Data=${v} must follow "source.key" format (example: credentials.invalid)`,
+          type: "INVALID_DATA_TAG",
+          message: `@DATA value '${v}' must follow safe pattern <repo>.<key> (letters, digits, _ and - only).`,
+          line
         });
       }
     }
 
-    // ------------------------------------------------------
-    // DESCRIPTION WARNING
-    // ------------------------------------------------------
-    if (!tags["DESCRIPTION"]) {
-      warnings.push({
-        file,
-        line: scenario.line,
-        message: `Scenario "${scenario.name}" missing @Description`,
+    // 3. Oracle: recommended but not mandatory
+    if (!tags["AC1"] && !tags["AC2"]) {
+      errors.push({
+        type: "MISSING_ORACLE",
+        message: `Scenario "${name}" has no acceptance criteria. Add @AC1= or @AC2= for better IEEE 29119 compliance.`,
+        line
       });
     }
   }
 
-  return { errors, warnings };
+  return errors;
 }

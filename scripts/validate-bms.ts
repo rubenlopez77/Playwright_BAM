@@ -2,110 +2,78 @@
 import fs from "node:fs";
 import path from "node:path";
 import chalk from "chalk";
-import { parseGherkinDocument } from "./validate-bms/gherkin-parser"; 
+
+import { parseFeature } from "./validate-bms/gherkin-parser";
 import { validateFeatureTags } from "./validate-bms/rules";
-import { ValidationError } from "./validate-bms/types";
 
-// --------------------------------------------------------
-// CONFIG
-// --------------------------------------------------------
-const ROOT = path.resolve(process.cwd(), "features");
-const IS_STRICT = process.env.BMS_STRICT === "true";
-
-console.log(chalk.cyan(`\n[BMS] Starting BMS Validation (strict=${IS_STRICT})...\n`));
-
-// --------------------------------------------------------
-// FIND ALL .feature FILES
-// --------------------------------------------------------
+// ------------------------------------------------------------
+// Recursively collect all .feature files
+// ------------------------------------------------------------
 function getAllFeatureFiles(dir: string): string[] {
-  const files = fs.readdirSync(dir);
-  const result: string[] = [];
+  let results: string[] = [];
 
-  for (const file of files) {
-    const full = path.join(dir, file);
-    const stats = fs.statSync(full);
+  for (const item of fs.readdirSync(dir, { withFileTypes: true })) {
+    const fullPath = path.join(dir, item.name);
 
-    if (stats.isDirectory()) {
-      result.push(...getAllFeatureFiles(full));
-    } else if (file.toLowerCase().endsWith(".feature")) {
-      result.push(full);
+    if (item.isDirectory()) {
+      results = results.concat(getAllFeatureFiles(fullPath));
+    } else if (item.isFile() && fullPath.endsWith(".feature")) {
+      results.push(fullPath);
     }
   }
 
-  return result;
+  return results;
 }
 
-const featureFiles = getAllFeatureFiles(ROOT);
+async function main() {
+  const strict = process.env.BMS_STRICT === "true";
 
-if (featureFiles.length === 0) {
-  console.warn(chalk.yellow("[BMS-WARN] No .feature files found under ./features"));
-}
+  // 1) If user passed arguments → validate those
+  let featureFiles = process.argv.slice(2).filter(f => f.endsWith(".feature"));
 
-// --------------------------------------------------------
-// VALIDATION
-// --------------------------------------------------------
-let errors: ValidationError[] = [];
-let warnings: ValidationError[] = [];
-
-for (const file of featureFiles) {
-  const content = fs.readFileSync(file, "utf8");
-
-  try {
-    const doc = parseGherkinDocument(content, file);
-    const result = validateFeatureTags(doc, file);
-
-    errors.push(...result.errors);
-    warnings.push(...result.warnings);
-
-  } catch (err: any) {
-    errors.push({
-      file,
-      line: 0,
-      message: `Gherkin parse error: ${err.message}`,
-    });
+  // 2) If user passed nothing → auto-detect features/
+  if (featureFiles.length === 0) {
+    const defaultDir = path.resolve("features");
+    if (fs.existsSync(defaultDir)) {
+      featureFiles = getAllFeatureFiles(defaultDir);
+    }
   }
-}
 
-// --------------------------------------------------------
-// PRINT RESULTS
-// --------------------------------------------------------
+  // Still empty → no features found
+  if (featureFiles.length === 0) {
+    console.log(chalk.yellow("No feature files found under ./features or via CLI arguments."));
+    process.exit(0);
+  }
 
-if (errors.length > 0) {
-  console.error(chalk.redBright(`\n❌ [BMS] Found ${errors.length} error(s):\n`));
+  let totalErrors = 0;
 
-  errors.forEach(err => {
-    console.error(
-      chalk.redBright(
-        `❌ [BMS-ERROR] ${err.file}:${err.line} ${err.message}`
-      )
+  for (const file of featureFiles) {
+    const abs = path.resolve(file);
+    const doc = parseFeature(abs);
+    const errors = validateFeatureTags(doc);
+
+    if (errors.length === 0) {
+      console.log(chalk.green(`[BMS] ${abs} ✓ Validation passed`));
+      continue;
+    }
+
+    totalErrors += errors.length;
+
+    console.log(chalk.red(`[BMS] ${abs} ✗ Validation failed`));
+    for (const e of errors) {
+      console.log(chalk.red(`  ✘ [${e.type}] Line ${e.line}: ${e.message}`));
+    }
+  }
+
+  if (totalErrors > 0 && strict) {
+    console.log(
+      chalk.red(`\n[BMS-STRICT] Validation failed with ${totalErrors} error(s). Exiting with code 1.\n`)
     );
-  });
-
-  console.error(
-    chalk.redBright(`\n❌ [BMS] Validation failed with ${errors.length} error(s).\n`)
-  );
-
-  if (IS_STRICT) {
     process.exit(1);
   }
 }
 
-if (warnings.length > 0) {
-  console.warn(chalk.yellow(`\n⚠️  [BMS] Found ${warnings.length} warning(s):\n`));
-
-  warnings.forEach(w => {
-    console.warn(
-      chalk.yellow(
-        `⚠️  [BMS-WARN] ${w.file}:${w.line} ${w.message}`
-      )
-    );
-  });
-
-  console.warn(chalk.yellow(`\n⚠️  [BMS] Validation passed with warnings.\n`));
-}
-
-if (errors.length === 0 && warnings.length === 0) {
-  console.log(chalk.greenBright(`\n✅ [BMS] Validation passed without errors.\n`));
-}
-
-console.log(chalk.cyan(`[BMS] Finished.\n`));
+main().catch(err => {
+  console.error(chalk.red("Unexpected BMS Validator error:\n"), err);
+  process.exit(1);
+});

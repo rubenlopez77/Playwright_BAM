@@ -1,4 +1,3 @@
-// support/hooks.ts
 import { Before, After, AfterAll, setDefaultTimeout } from "@cucumber/cucumber";
 import fs from "node:fs/promises";
 
@@ -22,30 +21,24 @@ AfterAll(async () => {
   if (!ExecutionContextFactory.wasInitialized()) return;
 
   const ctx = ExecutionContextFactory.getCurrent();
-  const tracer = ctx.tracer; // 🔹 antes era ctx.logger
+  const tracer = ctx.tracer;
 
   const workerId = ctx.workerId;
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-  const dir = `reports/${timestamp}`;
 
-  await fs.mkdir(dir, { recursive: true });
+  const baseDir = `reports/${timestamp}`;
+  const bmsDir = `${baseDir}/bms`;
 
-  await tracer.writeRaw(`${dir}/worker-${workerId}-raw.json`);
-  await tracer.writeStructured(`${dir}/worker-${workerId}-structured.json`);
+  // 🔹 Crear directorios necesarios
+  await fs.mkdir(baseDir, { recursive: true });
+  await fs.mkdir(bmsDir, { recursive: true });
 
-  // dentro de AfterAll, después de writeStructured
+  // 🔹 Escritos seguros sin fallar
+  await tracer.writeRaw(`${baseDir}/execution-trace.json`);
+  await tracer.writeStructured(`${baseDir}/structured.json`);
+  await tracer.writeBmsReports(bmsDir);
 
-  await tracer.writeRaw(`${dir}/worker-${workerId}-raw.json`);
-  await tracer.writeStructured(`${dir}/worker-${workerId}-structured.json`);
-
-  // 🔹 NUEVO: reports BMS por escenario
-  await tracer.writeBmsReports(`${dir}/bms`);
-
-  if (tracer.getEvents().length === 0) {
-    BamLogger.printWorkerSkipped(workerId, ctx.browserName);
-  }
-
-
+  // 🔹 Worker sin escenarios → mostrar skipped
   if (tracer.getEvents().length === 0) {
     BamLogger.printWorkerSkipped(workerId, ctx.browserName);
   }
