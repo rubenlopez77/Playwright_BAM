@@ -1,3 +1,11 @@
+v0.1.6
+- Añadido `BamLogger` (consola) y `BamTracer` (trazado JSON).
+- Centralizada la gestión de logs de escenario/paso/componente.
+- Estabilizados los workers en paralelo con asignación de navegador y detección de escenarios a omitir (skip).
+- Normalizado el comportamiento de LOG/TRACE; salida BDD limpia cuando LOG=false.
+- Añadidos informes JSON estructurados por worker en una carpeta con marca temporal.
+- Actualizados world, hooks y componentes para usar la API unificada de logging y tracing.
+
 v0.1.5
 - Se unifica toda la lógica de esperas (`waitVisible`, `waitForText`, `waitForNonEmptyText`) dentro de `GenericComponent`.
 - `ModalComponent` pasa a heredar de `GenericComponent` en lugar de `BaseComponent`.

@@ -4,6 +4,7 @@
   "scripts": {
     "test": "cucumber-js",
     "build:tools": "npm --prefix tools/eslint-plugin-bam-ux run build",
+    "validate:reports": "ts-node ./scripts/validate.report.ts",
     "lint:tests": "eslint \"steps/**/*.ts\"",
     "validate:ux": "ts-node scripts/validate-uxmaps.ts",
     "quality:check": "npm run build:tools && npm run lint:tests && npm run validate:ux"
@@ -11,6 +12,8 @@
   "dependencies": {
     "@cucumber/cucumber": "^10.2.1",
     "@cucumber/pretty-formatter": "^2.4.1",
+    "ajv": "^8.12.0",
+    "ajv-formats": "^2.1.1",
     "dotenv": "^16.4.5",
     "playwright": "^1.56.1"
   },

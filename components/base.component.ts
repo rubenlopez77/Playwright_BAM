@@ -1,8 +1,9 @@
 // components/base.component.ts
-import { ExecutionContext } from '../support/world';
-import { BamLogger } from '../support/logger/bam.logger';
+import { ExecutionContext } from "../support/world";
+import { BamLogger } from "../support/logger/bam.logger";
 
 export abstract class BaseComponent {
+
   protected readonly context: ExecutionContext;
   protected readonly selector: string;
   protected readonly name: string;
@@ -13,27 +14,22 @@ export abstract class BaseComponent {
     this.name = name;
   }
 
-  public get selectorValue(): string {
+  get selectorValue() {
     return this.selector;
   }
 
-  // -------------------------------
-  // Alias compatible con BAM v1.x
-  // -------------------------------
-  public execute(actionName: string, fn: (page: any) => Promise<void>) {
+  execute(actionName: string, fn: (page: any) => Promise<void>) {
     this.run(actionName, fn);
   }
 
-  // -------------------------------
-  // Core BAM v2 runner
-  // -------------------------------
   protected run(actionName: string, actionFn: (page: any) => Promise<void>) {
 
     this.context.enqueue(async () => {
-      const ctx     = this.context;
-      const tracer  = ctx.logger;
-      const browser = ctx.browserName;
-      const page    = ctx.page;
+
+      const tracer  = this.context.logger;
+      const browser = this.context.browserName;
+      const wid     = this.context.workerId;
+      const page    = this.context.page;
 
       const start = performance.now();
 
@@ -41,7 +37,6 @@ export abstract class BaseComponent {
         await actionFn(page);
         const duration = performance.now() - start;
 
-        // JSON (siempre)
         tracer.recordComponentAction(
           this.name,
           actionName,
@@ -50,10 +45,14 @@ export abstract class BaseComponent {
           true
         );
 
-        // LOG opcional
-        if (BamLogger.enabled) {
-          BamLogger.printComponentAction(this.name, actionName, duration, browser, true);
-        }
+        BamLogger.printComponentAction(
+          this.name,
+          actionName,
+          duration,
+          browser,
+          wid,
+          true
+        );
 
       } catch (error) {
 
@@ -67,9 +66,14 @@ export abstract class BaseComponent {
           false
         );
 
-        if (BamLogger.enabled) {
-          BamLogger.printComponentAction(this.name, actionName, duration, browser, false);
-        }
+        BamLogger.printComponentAction(
+          this.name,
+          actionName,
+          duration,
+          browser,
+          wid,
+          false
+        );
 
         throw error;
       }

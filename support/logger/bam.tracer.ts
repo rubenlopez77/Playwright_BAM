@@ -1,149 +1,86 @@
-
-import fs from 'node:fs/promises';
-
-export interface TraceEvent {
-  timestamp: string;
-  type: 'scenario-start' | 'scenario-end' | 'step-end' | 'component-action';
-  
-  // BDD fields
-  scenario?: string;
-  feature?: string;
-  tags?: string[];
-  status?: string;
-
-  // Step fields
-  step?: string;
-
-  // Component layer fields
-  component?: string;
-  action?: string;
-  selector?: string;
-  duration?: number;
-  success?: boolean;
-
-  // Browser
-  browser: string;
-}
+// support/logger/bam.tracer.ts
+import fs from "node:fs/promises";
 
 export class BamTracer {
-  
-  private readonly events: TraceEvent[] = [];
-  private readonly browser: string;
 
-  constructor(browser: string) {
-    this.browser = browser;
+  private readonly events: any[] = [];
+  private readonly browserName: string;
+  private readonly workerId: number;
+
+  constructor(browserName: string, workerId: number) {
+    this.browserName = browserName;
+    this.workerId = workerId;
   }
 
-  // ============================================================
-  //                    RECORD EVENT HELPERS
-  // ============================================================
+  recordComponentAction(
+    component: string,
+    action: string,
+    selector: string,
+    duration: number,
+    success: boolean
+  ) {
+    this.events.push({
+      timestamp: new Date().toISOString(),
+      type: "component",
+      component,
+      action,
+      selector,
+      duration,
+      success,
+      browser: this.browserName,
+      worker: this.workerId
+    });
+  }
 
   recordScenarioStart(name: string, feature?: string, tags?: string[]) {
     this.events.push({
       timestamp: new Date().toISOString(),
-      type: 'scenario-start',
+      type: "scenario-start",
       scenario: name,
       feature,
       tags,
-      browser: this.browser
+      browser: this.browserName,
+      worker: this.workerId
     });
   }
 
   recordScenarioEnd(name: string, status: string) {
     this.events.push({
       timestamp: new Date().toISOString(),
-      type: 'scenario-end',
+      type: "scenario-end",
       scenario: name,
       status,
-      browser: this.browser
+      browser: this.browserName,
+      worker: this.workerId
     });
   }
 
   recordStepEnd(text: string, status: string) {
     this.events.push({
       timestamp: new Date().toISOString(),
-      type: 'step-end',
-      step: text,
+      type: "step",
+      text,
       status,
-      browser: this.browser
+      browser: this.browserName,
+      worker: this.workerId
     });
   }
 
-  recordComponentAction(
-    component: string,
-    action: string,
-    selector: string | undefined,
-    duration: number,
-    success: boolean
-  ) {
-    this.events.push({
-      timestamp: new Date().toISOString(),
-      type: 'component-action',
-      component,
-      action,
-      selector,
-      duration,
-      success,
-      browser: this.browser
-    });
-  }
-
-  // ============================================================
-  //                    RAW OUTPUT
-  // ============================================================
-  
-  getRawEvents(): TraceEvent[] {
+  getEvents() {
     return this.events;
   }
 
-  async writeRaw(path: string): Promise<void> {
+  async writeRaw(path: string) {
     await fs.writeFile(path, JSON.stringify(this.events, null, 2));
   }
 
-  // ============================================================
-  //             STRUCTURED REPORT (AGGREGATED PER SCENARIO)
-  // ============================================================
-
-  async writeStructuredReport(path: string): Promise<void> {
-    const structured: any[] = [];
-
-    // Agrupar eventos por escenario
-    const scenarioMap: Record<string, TraceEvent[]> = {};
-
-    for (const ev of this.events) {
-      const scenario = ev.scenario ?? '__NO_SCENARIO__';
-      if (!scenarioMap[scenario]) scenarioMap[scenario] = [];
-      scenarioMap[scenario].push(ev);
-    }
-
-    // Construcción de bloques
-    for (const [scenarioName, list] of Object.entries(scenarioMap)) {
-      const start  = list.find(e => e.type === 'scenario-start');
-      const end    = list.find(e => e.type === 'scenario-end');
-      const steps  = list.filter(e => e.type === 'step-end');
-      const comps  = list.filter(e => e.type === 'component-action');
-
-      structured.push({
-        scenario: scenarioName,
-        feature: start?.feature ?? null,
-        tags: start?.tags ?? [],
-        browser: this.browser,
-        status: end?.status ?? 'UNKNOWN',
-        steps: steps.map(s => ({
-          text: s.step,
-          status: s.status,
-          timestamp: s.timestamp
-        })),
-        actions: comps.map(c => ({
-          component: c.component,
-          action: c.action,
-          selector: c.selector,
-          duration: c.duration,
-          success: c.success,
-          timestamp: c.timestamp
-        }))
-      });
-    }
+  async writeStructured(path: string) {
+    const structured = {
+      browser: this.browserName,
+      worker: this.workerId,
+      totalEvents: this.events.length,
+      events: this.events,
+    };
 
     await fs.writeFile(path, JSON.stringify(structured, null, 2));
   }

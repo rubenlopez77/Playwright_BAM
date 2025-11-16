@@ -5,75 +5,52 @@ import {
   After,
   BeforeStep,
   AfterStep
-} from '@cucumber/cucumber';
+} from "@cucumber/cucumber";
 
-import { BamWorld } from '../world';
-import { BamLogger } from './bam.logger';
+import { ExecutionContext } from "../world";
+import { BamLogger } from "./bam.logger";
 
-// ===========================================================
-//             BEFORE SCENARIO
-// ===========================================================
-
-Before(function (this: BamWorld, scenario) {
-  const ctx     = this.context;          // ExecutionContext real
-  const tracer  = ctx.logger;            // BamTracer
-  const browser = ctx.browserName;
+Before(function (this: ExecutionContext, scenario) {
+  const tracer  = this.logger;
+  const browser = this.browserName;
+  const wid     = this.workerId;
 
   const name    = scenario.pickle.name;
   const tags    = scenario.pickle.tags?.map(t => t.name) ?? [];
-  const feature = scenario.gherkinDocument?.feature?.name ?? '';
+  const feature = scenario.gherkinDocument?.feature?.name ?? "";
 
   tracer.recordScenarioStart(name, feature, tags);
 
-  if (BamLogger.enabled) {
-    BamLogger.printScenarioStart(name, browser, feature, tags);
-  }
+  BamLogger.printScenarioStart(name, browser, wid, feature, tags);
 });
 
-// ===========================================================
-//             BEFORE STEP
-// ===========================================================
-
-BeforeStep(async function (this: BamWorld) {
-  await this.context.flush();
+BeforeStep(async function (this: ExecutionContext) {
+  await this.flush();
 });
 
-// ===========================================================
-//             AFTER STEP
-// ===========================================================
+AfterStep(async function (this: ExecutionContext, step) {
+  const tracer  = this.logger;
+  const browser = this.browserName;
+  const wid     = this.workerId;
 
-AfterStep(async function (this: BamWorld, step) {
-  const ctx     = this.context;
-  const tracer  = ctx.logger;
-  const browser = ctx.browserName;
-
-  const text   = step.pickleStep?.text ?? '';
-  const status = step.result?.status?.toUpperCase() ?? 'UNKNOWN';
+  const text   = step.pickleStep?.text ?? "";
+  const status = step.result?.status?.toUpperCase() ?? "UNKNOWN";
 
   tracer.recordStepEnd(text, status);
 
-  if (BamLogger.enabled) {
-    BamLogger.printStepEnd(text, status, browser);
-  }
+  BamLogger.printStepEnd(text, status, browser, wid);
 
-  await ctx.flush();
+  await this.flush();
 });
 
-// ===========================================================
-//             AFTER SCENARIO
-// ===========================================================
-
-After(function (this: BamWorld, scenario) {
-  const ctx     = this.context;
-  const tracer  = ctx.logger;
-  const browser = ctx.browserName;
+After(function (this: ExecutionContext, scenario) {
+  const tracer  = this.logger;
+  const browser = this.browserName;
+  const wid     = this.workerId;
 
   const name   = scenario.pickle.name;
-  const status = scenario.result?.status?.toUpperCase() ?? 'UNKNOWN';
+  const status = scenario.result?.status?.toUpperCase() ?? "UNKNOWN";
 
   tracer.recordScenarioEnd(name, status);
-
-  if (BamLogger.enabled) {
-    BamLogger.printScenarioEnd(name, status, browser);
-  }
+  BamLogger.printScenarioEnd(name, status, browser, wid);
 });

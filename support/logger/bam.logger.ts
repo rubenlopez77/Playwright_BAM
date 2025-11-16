@@ -1,23 +1,23 @@
 // support/logger/bam.logger.ts
-import chalk from 'chalk';
-import { EnvConfig } from '../env';
+import chalk from "chalk";
+import { EnvConfig } from "../env";
 
 export class BamLogger {
 
-  static enabled = EnvConfig.LOG === true;
+  static readonly enabled = EnvConfig.LOG === true;
 
   static readonly icons = {
-    ok: '✅',
-    fail: '❌',
-    warn: '⚠️',
-    step: '→',
-    scenario: '◆',
-    worker: '🚀',
-    skip: '⚪',
+    ok: "✅",
+    fail: "❌",
+    warn: "⚠️",
+    step: "→",
+    scenario: "◆",
+    worker: "🚀",
+    skip: "⚠️",
   };
 
   static readonly colors = {
-    scenario: chalk.hex('#9b6df2'),
+    scenario: chalk.hex("#9b6df2"),
     worker: chalk.cyan,
     warn: chalk.yellow,
     error: chalk.red,
@@ -25,9 +25,6 @@ export class BamLogger {
     neutral: chalk.white,
   };
 
-  // ================================
-  // WORKERS (solo si LOG=true)
-  // ================================
   static printWorkerInit(workerId: number, browser: string) {
     if (!this.enabled) return;
     console.log(
@@ -42,54 +39,63 @@ export class BamLogger {
     if (!this.enabled) return;
     console.log(
       this.colors.warn(
-        `${this.icons.skip} [WORKER ${workerId}] SKIPPED — browser="${browser}", no scenarios executed`
+        `${this.icons.skip}  [WORKER ${workerId}] SKIPPED — browser="${browser}", no scenarios executed`
       )
     );
   }
 
-  // ================================
-  // SCENARIOS (solo si LOG=true)
-  // ================================
-  static printScenarioStart(name: string, browser: string, feature?: string, tags?: string[]) {
+  // ============================================================
+  // SCENARIOS
+  // ============================================================
+  static printScenarioStart(name: string, browser: string, wid: number, feature?: string, tags?: string[]) {
     if (!this.enabled) return;
 
     const line =
       `\n[SCENARIO START] ${name}` +
-      (feature ? ` — feature="${feature}"` : '') +
-      (tags?.length ? ` tags="${tags.join(' ')}"` : '') +
-      ` — browser="${browser}"`;
+      (feature ? ` — feature="${feature}"` : "") +
+      (tags?.length ? ` tags="${tags.join(" ")}"` : "") +
+      ` — browser="${browser}|W${wid}"`;
 
     console.log(this.colors.scenario(line));
   }
 
-  static printScenarioEnd(name: string, status: string, browser: string) {
+  static printScenarioEnd(name: string, status: string, browser: string, wid: number) {
     if (!this.enabled) return;
 
-    const ok  = status.toUpperCase() === 'PASSED';
+    const ok = status.toUpperCase() === "PASSED";
     const icon = ok ? this.icons.ok : this.icons.fail;
-    const txt  = ok ? 'OK' : 'KO!';
+    const msg = ok ? "OK" : "KO!";
 
-    const line = `${icon} [SCENARIO END]   ${name} → ${txt} — browser="${browser}"`;
+    const line = `${icon} [SCENARIO END]   ${name} → ${msg} — browser="${browser}|W${wid}"`;
+
     console.log(ok ? this.colors.scenario(line) : this.colors.error(line));
   }
 
-  // ================================
-  // STEPS (solo if LOG=true)
-  // ================================
-  static printStepEnd(text: string, status: string, browser: string) {
+  // ============================================================
+  // STEPS
+  // ============================================================
+  static printStepEnd(text: string, status: string, browser: string, wid: number) {
     if (!this.enabled) return;
-
-    const line = `[STEP] ${text} → ${status.toUpperCase()} — browser="${browser}"`;
-    console.log(this.colors.neutral(line));
+    console.log(
+      this.colors.neutral(`[STEP] ${text} → ${status.toUpperCase()} — browser="${browser}|W${wid}"`)
+    );
   }
 
-  // ================================
-  // COMPONENT ACTIONS (solo if LOG=true)
-  // ================================
-  static printComponentAction(name: string, action: string, duration: number, browser: string, success = true) {
+  // ============================================================
+  // COMPONENT ACTIONS
+  // ============================================================
+  static printComponentAction(
+    component: string,
+    action: string,
+    duration: number,
+    browser: string,
+    wid: number,
+    success: boolean
+  ) {
     if (!this.enabled) return;
 
-    const msg = `${name}.${action} : ${(duration / 1000).toFixed(2)}s [${browser}]`;
+    const msg = `${component}.${action} : ${(duration / 1000).toFixed(2)}s [${browser}|W${wid}]`;
+
     console.log(
       success
         ? this.colors.ok(`--> ${msg}`)

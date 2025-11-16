@@ -10,7 +10,7 @@
 >
 > Aunque mi stack principal es C#/Selenium, he desarrollado este POC en TypeScript para validar ideas sobre trazabilidad y arquitectura BAM
 
-![BAM](https://img.shields.io/badge/BAM_Framework-v0.1.5-blueviolet?logo=testcafe&logoColor=white&style=flat-square) 
+![BAM](https://img.shields.io/badge/BAM_Framework-v0.1.6-blueviolet?logo=testcafe&logoColor=white&style=flat-square) 
 
 **Estado:** Experimental / No productivo  
 
@@ -95,7 +95,7 @@ DINO analiza features, steps, requisitos y ejecución para complementar BAM con:
 ## Puntos de mejora (en análsis)
 - Observabilidad: Exportar métricas y logs en formato estructurado (JSON Lines / Prometheus / Elastic) y generar dashboards HTML con KPIs de rendimiento y éxito por requisito.
 
-- Velocidad / Parallelismo: Implementar BAM Runner Pool y Browser Context reuse para ejecución concurrente y reducción del tiempo total sin perder determinismo.
+- ~~Velocidad / Parallelismo: Implementar BAM Runner Pool y Browser Context reuse para ejecución concurrente y reducción del tiempo total sin perder determinismo.~~
 
 ---
 
@@ -159,10 +159,12 @@ npm install ./tools/eslint-plugin-bam-ux --save-dev
 ```
 ---
 ### 📜 Changelog
-- Se unifica toda la lógica de esperas (`waitVisible`, `waitForText`, `waitForNonEmptyText`) dentro de `GenericComponent`.
-- `ModalComponent` pasa a heredar de `GenericComponent` en lugar de `BaseComponent`.
-- `ModalComponent.open()` ahora usa directamente `waitVisible()` heredado.
-- `LoginPage` se actualiza para usar esperas declarativas desde los propios componentes.
+- Añadido `BamLogger` (consola) y `BamTracer` (trazado JSON).
+- Centralizada la gestión de logs de escenario/paso/componente.
+- Estabilizados los workers en paralelo con asignación de navegador y detección de escenarios a omitir (skip).
+- Normalizado el comportamiento de LOG/TRACE; salida BDD limpia cuando LOG=false.
+- Añadidos informes JSON estructurados por worker en una carpeta con marca temporal.
+- Actualizados world, hooks y componentes para usar la API unificada de logging y tracing.
 
 Histórico completo de cambios  en [CHANGES.md](CHANGES.md).
 
@@ -175,12 +177,9 @@ Histórico completo de cambios  en [CHANGES.md](CHANGES.md).
 - [x] Data layer para credenciales
 - [x] Integración simple CI/CD en Actions y Quality Gates (SonarQube)
 - [x] Integración plugin ESLint BAM
+- [x] Paralelismo controlado
 
 ### 🚧 En Desarrollo
-- [ ] **Paralelismo controlado** (BAM Runner Pool o similar. Sin mezclar contextos!)
-      - Ejecución concurrente de Worlds aislados.
-      - Sincronización de métricas y logger.
----      
 - [ ] **Sistema de métricas**
       - Medir duración, éxito y número de acciones por escenario.    
       - Generar `BAMMetrics.json` con KPIs agregados (avg_duration, success_rate).  
@@ -199,6 +198,9 @@ Histórico completo de cambios  en [CHANGES.md](CHANGES.md).
 ---
 - [ ] **Integración CI/CD**
       - Publicación automática avanzada en pipelines GitHub / GitLab / Azure / (Jenkins?).
+---
+- [ ] **Matrix Mode** Prubeas de compatibilidad entre navegadores
+
 ---
 - [ ] **Refinamiento del sistema de logs**
       - Mejorar **Logger** con niveles `compact | standard | verbose`.  

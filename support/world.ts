@@ -1,188 +1,141 @@
 // support/world.ts
-import { setWorldConstructor } from '@cucumber/cucumber';
-import { chromium, firefox, webkit, Browser, BrowserContext, Page } from 'playwright';
-import { EnvConfig } from './env';
-import { BamTracer } from './logger/bam.tracer';
-import { BamLogger } from './logger/bam.logger';
+import { setWorldConstructor } from "@cucumber/cucumber";
+import { chromium, firefox, webkit } from "playwright";
 
-// =======================================================================
-//                      EXECUTION CONTEXT (por worker)
-// =======================================================================
+import { EnvConfig } from "./env";
+import { BamLogger } from "./logger/bam.logger";
+import { BamTracer } from "./logger/bam.tracer";
 
 export class ExecutionContext {
-  browser!: Browser;
-  context!: BrowserContext;
-  page!: Page;
 
-  readonly browserName: string;
-  readonly logger: BamTracer;
+  browser!: any;
+  context!: any;
+  page!: any;
+
+  logger!: BamTracer;
+  browserName!: string;
+
+  workerId!: number;
 
   private queue: Array<() => Promise<void>> = [];
-  private readonly pageInstances = new Map<string, any>();
   private initialized = false;
+  private readonly pageInstances = new Map<string, any>();
 
-  constructor(browserName: string) {
+  constructor(browserName: string, workerId: number) {
     this.browserName = browserName;
-    this.logger = new BamTracer(browserName);
+    this.workerId = workerId;
   }
 
-  // Ejecutado 1 vez por worker
   async init() {
     if (this.initialized) return;
 
-    const browserMap: Record<string, any> = { chromium, firefox, webkit };
-    const browserType = browserMap[this.browserName] ?? chromium;
+    this.logger = new BamTracer(this.browserName, this.workerId);
 
-    // Logging opcional del worker
-    if (BamLogger.enabled) {
-      BamLogger.printWorkerInit(Number(process.env.CUCUMBER_WORKER_ID ?? 0), this.browserName);
-    }
+    const map = { chromium, firefox, webkit };
+    const type = map[this.browserName] ?? chromium;
 
-    this.browser = await browserType.launch({ headless: EnvConfig.HEADLESS });
+    this.browser = await type.launch({ headless: EnvConfig.HEADLESS });
     this.context = await this.browser.newContext();
     this.page = await this.context.newPage();
 
-    // Navegación inicial
     await this.page.goto(EnvConfig.BASE_URL);
 
     this.initialized = true;
   }
 
-  enqueue(action: () => Promise<void>) {
-    this.queue.push(action);
+  enqueue(fn: () => Promise<void>) {
+    this.queue.push(fn);
   }
 
   async flush() {
-    let lastError: any = null;
-
-    for (const action of this.queue) {
-      try {
-        await action();
-      } catch (err) {
-        lastError = err;
-        break;
-      }
-    }
-
+    for (const fn of this.queue) await fn();
     this.queue = [];
-
-    if (lastError) throw lastError;
   }
 
   async close() {
-    if (!this.initialized) return;
-
-    try {
-      await this.flush();
-    } finally {
-      await this.browser?.close();
-      this.initialized = false;
-    }
+    await this.flush();
+    await this.browser?.close();
+    this.initialized = false;
   }
 
-  getPage<T>(PageClass: new (ctx: ExecutionContext) => T): T {
+  getPage<T>(PageClass: new (w: ExecutionContext) => T): T {
     const key = PageClass.name;
-
     if (!this.pageInstances.has(key)) {
       this.pageInstances.set(key, new PageClass(this));
     }
-
     return this.pageInstances.get(key);
   }
 }
 
-// =======================================================================
-//                   FACTORY (1 ExecutionContext por worker)
-// =======================================================================
-
+// =====================================================
+// ExecutionContextFactory
+// =====================================================
 export class ExecutionContextFactory {
   private static instance: ExecutionContext | null = null;
-
-  static async getOrCreate(): Promise<ExecutionContext> {
-    if (this.instance) return this.instance;
-
-    const workerId = Number(process.env.CUCUMBER_WORKER_ID ?? '0');
-
-    const browser =
-      EnvConfig.BROWSER[workerId] ??
-      EnvConfig.MAIN_BROWSER ??
-      'chromium';
-
-    const ctx = new ExecutionContext(browser);
-    await ctx.init();
-
-    this.instance = ctx;
-    return ctx;
-  }
-
-  static getCurrent(): ExecutionContext {
-    if (!this.instance) {
-      throw new Error('ExecutionContext no inicializado.');
-    }
-    return this.instance;
-  }
 
   static wasInitialized(): boolean {
     return this.instance !== null;
   }
 
-  static async close(): Promise<void> {
-    if (this.instance) {
-      await this.instance.close();
-      this.instance = null;
+  static async getOrCreate(): Promise<ExecutionContext> {
+    if (!this.instance) {
+      const workerId = Number(process.env.CUCUMBER_WORKER_ID ?? "0");
+      const browser  = EnvConfig.BROWSER[workerId] ?? EnvConfig.MAIN_BROWSER;
+
+      BamLogger.printWorkerInit(workerId, browser);
+
+      const ctx = new ExecutionContext(browser, workerId);
+      await ctx.init();
+
+      this.instance = ctx;
     }
+
+    return this.instance;
+  }
+
+  static getCurrent(): ExecutionContext {
+    if (!this.instance) throw new Error("ExecutionContext not initialized");
+    return this.instance;
+  }
+
+  static async close() {
+    if (!this.instance) return;
+
+    await this.instance.close();
+    this.instance = null;
   }
 }
 
-// =======================================================================
-//                    BAM WORLD (por escenario)
-// =======================================================================
-
+// =====================================================
+// BAM WORLD
+// =====================================================
 export class BamWorld {
-  private _context?: ExecutionContext;
 
-  // NOSONAR - Cucumber necesita constructor explícito
-  constructor() {
-    /*  
-      El World de Cucumber necesita un constructor síncrono explícito
-      para que el runner pueda instanciarlo correctamente.
-      La inicialización real debe hacerse en hooks async, 
-      por eso el constructor queda vacío por diseño.
-      Es parte del modelo de ejecución del framework.
-    */
-  }
+  private _ctx?: ExecutionContext;
 
-  async init(): Promise<void> {
-    this._context = await ExecutionContextFactory.getOrCreate();
+  // NOSONAR: Cucumber necesita constructor síncrono vacío
+  constructor() {}
+
+  async init() {
+    this._ctx = await ExecutionContextFactory.getOrCreate();
   }
 
   get context(): ExecutionContext {
-    if (!this._context) {
-      throw new Error('ExecutionContext no está inicializado (falta Before hook).');
-    }
-    return this._context;
+    if (!this._ctx) throw new Error("ExecutionContext not initialized");
+    return this._ctx;
   }
 
-  get page(): Page {
-    return this.context.page;
-  }
+  get page() { return this.context.page; }
+  get logger() { return this.context.logger; }
+  get browserName() { return this.context.browserName; }
+  get workerId() { return this.context.workerId; }
 
-  get logger(): BamTracer {
-    return this.context.logger;
-  }
+  enqueue(fn: () => Promise<void>) { this.context.enqueue(fn); }
+  flush() { return this.context.flush(); }
 
-  enqueue(fn: () => Promise<void>) {
-    this.context.enqueue(fn);
-  }
-
-  async flush(): Promise<void> {
-    await this.context.flush();
-  }
-
-  getPage<T>(PageClass: new (ctx: ExecutionContext) => T): T {
+  getPage<T>(PageClass: new (w: ExecutionContext) => T): T {
     return this.context.getPage(PageClass);
   }
 }
 
-// Registrar BamWorld como World de Cucumber
-setWorldConstructor(BamWorld as any);
+setWorldConstructor(BamWorld);
