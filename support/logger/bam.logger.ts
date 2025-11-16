@@ -29,10 +29,10 @@ export class BamLogger {
     if (!this.enabled) return;
     console.log(
       this.colors.worker(
-        `\n${this.icons.worker} [WORKER ${workerId}] Inicializando ExecutionContext`
+        `\n${this.icons.worker} [WORKER ${workerId}]  →  ${browser}`
       )
     );
-    console.log(`   → Navegador asignado: ${browser}`);
+
   }
 
   static printWorkerSkipped(workerId: number, browser: string) {

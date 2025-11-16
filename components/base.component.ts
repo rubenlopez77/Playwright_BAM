@@ -26,7 +26,8 @@ export abstract class BaseComponent {
 
     this.context.enqueue(async () => {
 
-      const tracer  = this.context.logger;
+      // 🔹 Ahora usamos explícitamente el tracer
+      const tracer  = this.context.tracer;
       const browser = this.context.browserName;
       const wid     = this.context.workerId;
       const page    = this.context.page;

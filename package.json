@@ -7,6 +7,7 @@
     "validate:reports": "ts-node ./scripts/validate.report.ts",
     "lint:tests": "eslint \"steps/**/*.ts\"",
     "validate:ux": "ts-node scripts/validate-uxmaps.ts",
+    "bms:validate": "ts-node scripts/validate-bms.ts",
     "quality:check": "npm run build:tools && npm run lint:tests && npm run validate:ux"
   },
   "dependencies": {

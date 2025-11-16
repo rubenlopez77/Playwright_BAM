@@ -1,5 +1,4 @@
 // support/logger/scenario.logger.ts
-
 import {
   Before,
   After,
@@ -7,11 +6,11 @@ import {
   AfterStep
 } from "@cucumber/cucumber";
 
-import { ExecutionContext } from "../world";
+import { BamWorld } from "../world";
 import { BamLogger } from "./bam.logger";
 
-Before(function (this: ExecutionContext, scenario) {
-  const tracer  = this.logger;
+Before(function (this: BamWorld, scenario) {
+  const tracer  = this.tracer;        // antes: this.logger
   const browser = this.browserName;
   const wid     = this.workerId;
 
@@ -24,12 +23,12 @@ Before(function (this: ExecutionContext, scenario) {
   BamLogger.printScenarioStart(name, browser, wid, feature, tags);
 });
 
-BeforeStep(async function (this: ExecutionContext) {
+BeforeStep(async function (this: BamWorld) {
   await this.flush();
 });
 
-AfterStep(async function (this: ExecutionContext, step) {
-  const tracer  = this.logger;
+AfterStep(async function (this: BamWorld, step) {
+  const tracer  = this.tracer;        // antes: this.logger
   const browser = this.browserName;
   const wid     = this.workerId;
 
@@ -43,8 +42,8 @@ AfterStep(async function (this: ExecutionContext, step) {
   await this.flush();
 });
 
-After(function (this: ExecutionContext, scenario) {
-  const tracer  = this.logger;
+After(function (this: BamWorld, scenario) {
+  const tracer  = this.tracer;        // antes: this.logger
   const browser = this.browserName;
   const wid     = this.workerId;
 

@@ -22,7 +22,7 @@ AfterAll(async () => {
   if (!ExecutionContextFactory.wasInitialized()) return;
 
   const ctx = ExecutionContextFactory.getCurrent();
-  const tracer = ctx.logger;
+  const tracer = ctx.tracer; // 🔹 antes era ctx.logger
 
   const workerId = ctx.workerId;
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
@@ -32,6 +32,18 @@ AfterAll(async () => {
 
   await tracer.writeRaw(`${dir}/worker-${workerId}-raw.json`);
   await tracer.writeStructured(`${dir}/worker-${workerId}-structured.json`);
+
+  // dentro de AfterAll, después de writeStructured
+
+  await tracer.writeRaw(`${dir}/worker-${workerId}-raw.json`);
+  await tracer.writeStructured(`${dir}/worker-${workerId}-structured.json`);
+
+  // 🔹 NUEVO: reports BMS por escenario
+  await tracer.writeBmsReports(`${dir}/bms`);
+
+  if (tracer.getEvents().length === 0) {
+    BamLogger.printWorkerSkipped(workerId, ctx.browserName);
+  }
 
 
   if (tracer.getEvents().length === 0) {

@@ -5,6 +5,7 @@ import { chromium, firefox, webkit } from "playwright";
 import { EnvConfig } from "./env";
 import { BamLogger } from "./logger/bam.logger";
 import { BamTracer } from "./logger/bam.tracer";
+import { IBamTracer } from "./logger/bam.tracer.types";
 
 export class ExecutionContext {
 
@@ -12,7 +13,8 @@ export class ExecutionContext {
   context!: any;
   page!: any;
 
-  logger!: BamTracer;
+  // 🔹 Ahora expresamente un tracer, no un "logger"
+  tracer!: IBamTracer;
   browserName!: string;
 
   workerId!: number;
@@ -29,7 +31,8 @@ export class ExecutionContext {
   async init() {
     if (this.initialized) return;
 
-    this.logger = new BamTracer(this.browserName, this.workerId);
+    // 🔹 Inyección de implementación, pero tipeada por la interfaz
+    this.tracer = new BamTracer(this.browserName, this.workerId);
 
     const map = { chromium, firefox, webkit };
     const type = map[this.browserName] ?? chromium;
@@ -64,6 +67,11 @@ export class ExecutionContext {
       this.pageInstances.set(key, new PageClass(this));
     }
     return this.pageInstances.get(key);
+  }
+
+  // 🔹 Compatibilidad hacia atrás: si alguien usa context.logger, sigue funcionando
+  get logger(): IBamTracer {
+    return this.tracer;
   }
 }
 
@@ -107,9 +115,11 @@ export class ExecutionContextFactory {
 }
 
 // =====================================================
-// BAM WORLD
+// BAM WORLD (Cucumber World)
 // =====================================================
-export class BamWorld {
+
+// Nombre más enterprise, pero mantenemos alias para no romper imports
+export class BamCucumberWorld {
 
   private _ctx?: ExecutionContext;
 
@@ -126,7 +136,11 @@ export class BamWorld {
   }
 
   get page() { return this.context.page; }
-  get logger() { return this.context.logger; }
+  get tracer() { return this.context.tracer; }
+
+  // 🔹 Compat: this.logger sigue funcionando en steps antiguos
+  get logger() { return this.context.tracer; }
+
   get browserName() { return this.context.browserName; }
   get workerId() { return this.context.workerId; }
 
@@ -138,4 +152,7 @@ export class BamWorld {
   }
 }
 
-setWorldConstructor(BamWorld);
+// Alias para mantener compatibilidad con cualquier import existente
+export { BamCucumberWorld as BamWorld };
+
+setWorldConstructor(BamCucumberWorld);

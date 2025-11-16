@@ -158,6 +158,19 @@ Instalación del plugin
 npm install ./tools/eslint-plugin-bam-ux --save-dev
 ```
 ---
+### Test Data in BAM BMS (v0.1.8)
+
+Test data is referenced using the @Data tag:
+
+@Data=credentials.invalid  
+@Data=credentials.valid
+
+BAM resolves test data using the internal TestDataRepository.
+
+Test data source must be defined in /data/*.data.ts files.
+
+---
+
 ### 📜 Changelog
 - Añadido `BamLogger` (consola) y `BamTracer` (trazado JSON).
 - Centralizada la gestión de logs de escenario/paso/componente.
