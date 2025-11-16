@@ -3,36 +3,38 @@ import { credentials } from "../data/credentials.data";
 
 export class TestDataRepository {
 
-  private static readonly sources: Record<string, any> = {
-    credentials
+  private static readonly sources: Record<string, Record<string, unknown>> = {
+    credentials,
   };
 
-  /** Permite registrar nuevas colecciones externas */
-  static register(name: string, data: Record<string, any>) {
+  static register(name: string, data: Record<string, unknown>): void {
     this.sources[name] = data;
   }
 
-  /** Devuelve un dataset por clave "source.key" → credentials.invalid */
-  static resolve(identifier: string): any {
+  static resolve(identifier: string): unknown {
     const [sourceName, entryName] = identifier.split(".");
+
+    if (!sourceName || !entryName) {
+      throw new Error(
+        `Invalid test data identifier '${identifier}'. Expected 'source.key' format (e.g. 'credentials.invalid').`
+      );
+    }
 
     const source = this.sources[sourceName];
     if (!source) {
-      throw new Error(`TestData source '${sourceName}' not found`);
+      throw new Error(`Test data source '${sourceName}' not found.`);
     }
 
-    const entry = source[entryName];
-    if (!entry) {
-      throw new Error(`TestData entry '${entryName}' missing in '${sourceName}'`);
+    if (!(entryName in source)) {
+      throw new Error(`Test data entry '${entryName}' not found in source '${sourceName}'.`);
     }
 
-    return entry;
+    return source[entryName];
   }
 
-  /** Lista de todas las claves disponibles */
-  static list(): string[] {
-    return Object.entries(this.sources).flatMap(([src, data]) =>
-      Object.keys(data).map(key => `${src}.${key}`)
+  static listIdentifiers(): string[] {
+    return Object.entries(this.sources).flatMap(([sourceName, data]) =>
+      Object.keys(data).map((key) => `${sourceName}.${key}`)
     );
   }
 }

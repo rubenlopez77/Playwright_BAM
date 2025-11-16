@@ -2,6 +2,33 @@
 
 export type BamStatus = "PASSED" | "FAILED" | "SKIPPED" | "UNKNOWN";
 
+export type BamPriority = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+export type BamRisk = "LOW" | "MEDIUM" | "HIGH";
+export type BamBusinessImpact = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+
+export type BamSeverity = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL" | "BLOCKER";
+export type BamReproducibility = "ALWAYS" | "SOMETIMES" | "RARE" | "UNKNOWN";
+
+export type BamTestLevel = "UNIT" | "INTEGRATION" | "SYSTEM" | "ACCEPTANCE";
+export type BamTestType =
+  | "FUNCTIONAL"
+  | "NON_FUNCTIONAL"
+  | "SECURITY"
+  | "USABILITY"
+  | "PERFORMANCE";
+
+export interface BamTestDesign {
+  technique?: string;
+  coverage?: string;
+}
+
+export interface BamResolvedTestDataEntry {
+  parameter: string;
+  value: unknown;
+  source: string;   // p.ej. "credentials.invalid"
+  masked: boolean;  // true para password/token/etc.
+}
+
 export interface BamTestSession {
   testPlan?: string;
   testCycle?: string;
@@ -13,26 +40,42 @@ export interface BamTestSession {
 }
 
 export interface BamMetadata {
-  id: string;                // @ID=TC-001
-  title: string;             // @Title="..."
-  description: string;       // @Description="..."
+  id: string;
+  title: string;
+  description: string;
 
-  requirements?: string[];   // @REQ=...
-  userStories?: string[];    // @USR=...
-  acceptanceCriteria?: string[]; // @AC1=..., @AC2=...
+  requirements: string[];
+  userStories: string[];
+  acceptanceCriteria: string[];
 
-  priority?: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";  // @PRIORITY
-  risk?: "LOW" | "MEDIUM" | "HIGH";                   // @RISK
-  businessImpact?: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL"; // @BUSINESS
+  priority?: BamPriority;
+  risk?: BamRisk;
+  businessImpact?: BamBusinessImpact;
 
-  preconditions?: string[];  // @PRE
-  testData?: string[];          // identificadores, p.e.: ["credentials.invalid"]
-  
-  resolvedTestData?: Record<string, any>[]; // Data resolved from identifiers (e.g. credentials.invalid → { username, pass }) 
-  component?: string;        // @COMPONENT
-  module?: string;           // @MODULE
-  labels?: string[];         // @LABEL
-  owner?: string;            // @OWNER
+  preconditions?: string[];
+  postconditions?: string[];
+
+  testData?: string[];
+  resolvedTestData?: BamResolvedTestDataEntry[];
+
+  component?: string;
+  module?: string;
+  labels?: string[];
+  owner?: string;
+
+  // IEEE 29119-3 / ISTQB
+  testOracle?: string;
+  testConditions?: string[];
+  testCaseObjective?: string;
+
+  testLevel?: BamTestLevel;
+  testType?: BamTestType;
+  testTechnique?: string;
+  testDesign?: BamTestDesign;
+
+  // Incident reporting / IEEE 29119
+  incidentTemplate?: string;
+  incidentSeverityLevels?: string[];
 }
 
 export interface BamExecution {
@@ -45,7 +88,7 @@ export interface BamExecution {
 }
 
 export interface BamStep {
-  keyword?: string;   // Given/When/Then/And... (por ahora lo dejamos opcional)
+  keyword?: string;   // Given/When/Then/And/But (futuro)
   text: string;
   status: BamStatus;
   timestamp: string;  // ISO
@@ -58,7 +101,7 @@ export interface BamAction {
   duration: number;
   success: boolean;
   timestamp: string;   // ISO
-  boundStep?: string;  // futuro: enlace acción-step
+  boundStep?: string;
 }
 
 export type BamEvidenceType = "screenshot" | "video" | "log" | "trace" | "custom";
@@ -68,9 +111,6 @@ export interface BamEvidence {
   name: string;
   path: string;
 }
-
-export type BamSeverity = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL" | "BLOCKER";
-export type BamReproducibility = "ALWAYS" | "SOMETIMES" | "RARE" | "UNKNOWN";
 
 export interface BamDefectRef {
   defectId: string;
@@ -96,7 +136,7 @@ export interface BamPerformanceMetrics {
 }
 
 export interface BamReliabilityMetrics {
-  status?: string;   // texto libre, p.e. "STABLE"
+  status?: string;   // "STABLE" / "UNSTABLE"...
   failRate?: number; // 0..1
 }
 
@@ -132,4 +172,3 @@ export interface BamExecutionReport {
   incidents?: BamIncident[];
   metrics?: BamMetrics;
 }
-

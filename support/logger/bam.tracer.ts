@@ -1,17 +1,16 @@
 // support/logger/bam.tracer.ts
 import fs from "node:fs/promises";
 import { IBamTracer } from "./bam.tracer.types";
-
 import {
   BamAction,
   BamExecution,
   BamExecutionReport,
   BamMetadata,
   BamMetrics,
+  BamResolvedTestDataEntry,
   BamStatus,
   BamStep
 } from "./bms.types";
-
 import { BmsTagParser } from "./bms.tag-parser";
 import { TestDataRepository } from "../testdata.repository";
 
@@ -197,7 +196,6 @@ export class BamTracer implements IBamTracer {
       }
     }
 
-    // Cerrar escenario no finalizado
     if (current) {
       reports.push(this.buildReportFromContext(current));
     }
@@ -205,10 +203,7 @@ export class BamTracer implements IBamTracer {
     return reports;
   }
 
-  // ============================================================
-  // HELPERS (Predicates)
-  // ============================================================
-
+  // Predicates
   private isScenarioStart(e: BamEvent): e is ScenarioStartEvent {
     return e.type === "scenario-start";
   }
@@ -225,10 +220,7 @@ export class BamTracer implements IBamTracer {
     return e.type === "component";
   }
 
-  // ============================================================
-  // HELPERS (Context management)
-  // ============================================================
-
+  // Context helpers
   private handleScenarioStart(
     evt: ScenarioStartEvent,
     current: ScenarioContext | undefined,
@@ -261,29 +253,54 @@ export class BamTracer implements IBamTracer {
     const startEvt = ctx.start;
     const startTime = startEvt.timestamp;
     const endTime = this.resolveEndTime(ctx);
-
     const durationMs = this.safeDurationMs(startTime, endTime);
 
-    // Metadata from tags (BMS)
     const metadata: BamMetadata = BmsTagParser.fromTags(
       startEvt.tags,
       startEvt.scenario,
       startEvt.feature
     );
 
-    // Resolve test data identifiers → full data
-    let resolved: any[] = [];
+    // Test data enriquecido: parameter/value/source/masked
+    const resolvedEntries: BamResolvedTestDataEntry[] = [];
+
     if (metadata.testData && metadata.testData.length > 0) {
-      resolved = metadata.testData.map(id => {
+      for (const id of metadata.testData) {
         try {
-          return TestDataRepository.resolve(id);
+          const data = TestDataRepository.resolve(id);
+          if (data && typeof data === "object") {
+            for (const [key, value] of Object.entries(data)) {
+              if (key.toLowerCase() === "description") continue;
+              const masked = this.isSensitiveKey(key);
+              resolvedEntries.push({
+                parameter: key,
+                value,
+                source: id,
+                masked
+              });
+            }
+          } else {
+            resolvedEntries.push({
+              parameter: id,
+              value: data,
+              source: id,
+              masked: false
+            });
+          }
         } catch (err) {
-          return { id, error: (err as Error).message };
+          resolvedEntries.push({
+            parameter: id,
+            value: (err as Error).message,
+            source: id,
+            masked: false
+          });
         }
-      });
+      }
     }
 
-    metadata.resolvedTestData = resolved;
+    if (resolvedEntries.length > 0) {
+      metadata.resolvedTestData = resolvedEntries;
+    }
 
     const status = this.computeScenarioStatus(ctx);
 
@@ -296,13 +313,13 @@ export class BamTracer implements IBamTracer {
       durationMs
     };
 
-    const steps: BamStep[] = ctx.steps.map(s => ({
+    const steps: BamStep[] = ctx.steps.map((s) => ({
       text: s.text,
       status: this.mapStatus(s.status),
       timestamp: s.timestamp
     }));
 
-    const actions: BamAction[] = ctx.actions.map(a => ({
+    const actions: BamAction[] = ctx.actions.map((a) => ({
       component: a.component,
       action: a.action,
       selector: a.selector,
@@ -327,14 +344,9 @@ export class BamTracer implements IBamTracer {
     };
   }
 
-  // ============================================================
-  // METRICS & STATUS
-  // ============================================================
-
   private resolveEndTime(ctx: ScenarioContext): string {
     if (ctx.end?.timestamp) return ctx.end.timestamp;
 
-    // Usamos .at(-1) (recomendado por Sonar)
     const timestamps = [
       ...ctx.steps.map(s => s.timestamp),
       ...ctx.actions.map(a => a.timestamp)
@@ -363,10 +375,10 @@ export class BamTracer implements IBamTracer {
       return this.mapStatus(ctx.end.status);
     }
 
-    const steps = ctx.steps.map(s => s.status.toUpperCase());
-    if (steps.includes("FAILED")) return "FAILED";
-    if (steps.includes("PASSED")) return "PASSED";
-    if (steps.includes("SKIPPED")) return "SKIPPED";
+    const upper = ctx.steps.map(s => s.status.toUpperCase());
+    if (upper.includes("FAILED")) return "FAILED";
+    if (upper.includes("PASSED")) return "PASSED";
+    if (upper.includes("SKIPPED")) return "SKIPPED";
     return "UNKNOWN";
   }
 
@@ -385,6 +397,9 @@ export class BamTracer implements IBamTracer {
 
     const componentsUsed = Array.from(new Set(actions.map(a => a.component)));
 
+    const failedSteps = steps.filter(s => s.status === "FAILED").length;
+    const failRate = stepsCount ? failedSteps / stepsCount : 0;
+
     return {
       performance: {
         totalDurationMs: durationMs,
@@ -400,8 +415,22 @@ export class BamTracer implements IBamTracer {
       functionalSuitability: {
         requirementsCovered: metadata.requirements,
         acCovered: metadata.acceptanceCriteria?.length
+      },
+      reliability: {
+        status: failedSteps > 0 ? "UNSTABLE" : "STABLE",
+        failRate
       }
     };
+  }
+
+  private isSensitiveKey(name: string): boolean {
+    const n = name.toLowerCase();
+    return (
+      n.includes("pass") ||
+      n.includes("pwd") ||
+      n.includes("token") ||
+      n.includes("secret")
+    );
   }
 
   // ============================================================
@@ -416,10 +445,7 @@ export class BamTracer implements IBamTracer {
 
     for (const [index, report] of reports.entries()) {
       const id = report.metadata.id || `scenario-${index + 1}`;
-
-      // Sin escape innecesario → Sonar OK
       const safeId = id.replace(/[^\w-]+/g, "_");
-
       const path = `${baseDir}/${safeId}.json`;
       await fs.writeFile(path, JSON.stringify(report, null, 2));
     }
