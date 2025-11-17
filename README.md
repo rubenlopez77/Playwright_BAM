@@ -52,24 +52,37 @@ ideas relacionadas con trazabilidad, estandarización y orquestación unificada 
 
 BAM no es “otro framework más” por encima de Playwright o Selenium.  
 
-Es un **modelo de orquestación de calidad** diseñado para unir:
+BAM es un modelo de **orquestación de calidad** que estructura la automatización en
+cuatro dimensiones complementarias:
 
-- La intención del negocio
-- El diseño de pruebas
-- La ejecución técnica
-- La evidencia final
+### 1. Intención del negocio
+- Objetivos funcionales  
+- Requisitos, user stories y criterios de aceptación  
+- Priorización y riesgo  
 
-La función del QA ya no es validar si “algo funciona”, sino **orquestar la calidad** desde los requisitos hasta la traza de ejecución.  
+### 2. Diseño de pruebas
+- Metadata BMS (IDs, requisitos, AC, datos)  
+- Gherkin declarativo  
+- Pruebas UX  
+- Cobertura funcional y gobernanza  
 
-BAM estructura cómo debe hacerse esa orquestación.
+### 3. Ejecución técnica
+- Componentes de UI  
+- Validaciones API/microservicios  
+- Orquestación API → UI  
+- Control de asincronía  
+- Métricas de rendimiento basadas en SQuaRE (ISO/IEC 25002)  
 
----
+### 4. Evidencia final
+- Trazabilidad completa mediante BMS  
+- Evidencias técnicas estructuradas  
+- Logs y trazas por componente  
+- Métricas de duración, estabilidad y cobertura  
+- Datos exportables a sistemas ALM  
 
-## 📌 ¿Por qué existe BAM?
+BAM no intenta competir en velocidad ni en magia,  
+sino **unificar negocio, pruebas, ejecución y evidencias** bajo un modelo coherente y gobernado.
 
-Los frameworks tradicionales se centran en *cómo automatizar*, pero no en *cómo gobernar la calidad*.  
-
-BAM aborda los problemas reales que sufren equipos QA cuando las suites crecen y la automatización se convierte en deuda técnica.
 
 ---
 
@@ -126,7 +139,8 @@ BAM aborda directamente los problemas más comunes.
 
 ### 5. Reporting pobre
 - Logs dispersos  
-- Fallos difíciles de rastrear  
+- Fallos difíciles de rastrear
+- No mas Excel!
 - No se sabe qué componente falló  
 
 ### 6. Desconexión entre negocio y QA
