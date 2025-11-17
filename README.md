@@ -369,111 +369,33 @@ No forma parte del núcleo del framework; es una herramienta opcional para equip
 - 🧠 Enfocado en modelos locales (Ollama, LM Studio)
 - 💬 Asistencia, no sustitución del QA
 - 🔒 No envía datos a la nube
-
----
-
-## Objetivos funcionales de DINO
-
-> Algunos están implementados parcialmente, otros en fase de diseño.
-
-- ✔ Decorar features Gherkin con metadata BMS
-- ✔ Validar que los tests cumplen las reglas BAM (sin `await`, estructura declarativa, runner correcto)
-- ✔ Detectar huecos entre requisitos, AC, features y pasos implementados
-- ✔ Ayudar a generar documentación viva (Test Plan, matrices de cobertura, trazabilidad)
-- ✔ Reducir tiempo de diseño de pruebas y elevar su calidad
-- ✔ Funcionar 100% offline mediante IA local
-
----
-
-## Ejemplos de uso (conceptuales)
-
-### 🟦 1. Generación automática de steps/tests BAM (característica clave)
-
-DINO puede analizar un feature Gherkin y sugerir:
-
-- El método de página a invocar  
-- El componente BAM apropiado (Button, Wait, Modal, Navigation…)  
-- El nombre del step  
-- La estructura declarativa correcta (sin `await`)  
-- El patrón recomendado según las reglas del plugin ESLint BAM UX  
-
-Ejemplo conceptual:
-
-Entrada:
-
-```gherkin
-Scenario: User searches for a product
-  Given the user is on the home page
-  When the user searches for "Laptop"
-  Then the results should contain "Laptop"
-```
-
-Salida sugerida:
-``` ts
-When('the user searches for {string}', function (query: string) {
-  const user = this.getPage(HomePage);
-  user.searchesFor(query);
-});
-
-```
-
-Esto no sustituye al QA, pero acelera el diseño y la escritura 
- de nuevas pruebas. El QA Como orquestador.
-
-### 🟦 1. Añadir metadata BMS a un feature Gherkin
-
-Entrada:
-
-```gherkin
-Feature: Login
-  Scenario: User logs in successfully
-    Given the user opens the home page
-    When the user logs in with valid credentials
-    Then the user should see his name in the top bar
-
-```
-
-Salida sugerida por DINO:
-
-```
-@ID=TC-002
-@Title=Valid_login_shows_username
-@Description=Valid_user_logs_in_and_sees_his_name_in_the_navbar
-@Module=Authentication
-@Component=Login
-@Pre=User_not_authenticated
-@AC1=Welcome_message_includes_username
-@AC2=Login_modal_should_disappear_after_success
-@Data=credentials.valid
-@Priority=HIGH
-@Risk=LOW
-Scenario: User logs in successfully
-```
-
-### 🟦  2. Analizar trazas de ejecución BAM
-
-DINO puede interpretar un JSON BAM para:
-- Identificar el componente responsable del fallo
-- Sugerir la causa probable (selector, timing, transición, datos…)
-- Proponer mejoras sobre el componente afectado
-- Señalar patrones de flakiness
-
-### 🟦  3. Construir documentación viva
-
-A partir de:
-- Features con BMS
-- Resultados JSON de ejecución
-- Módulos y componentes
-- Prioridades y riesgos
-- DINO puede generar borradores de:
-- Matrices de cobertura
-- Secciones de un Test Plan
-- Informes de calidad para PO/negocio
-- Resúmenes agrupados por módulo o componente
-
 >Importante:
 DINO es un asistente para acelerar el trabajo del QA, no una capa mágica ni un sustituto del juicio humano.
-# 8. Preguntas frecuentes (FAQ)
+# 8. Getting Started – BAM Community Edition
+
+✔️ Instalar dependencias
+```npm install```
+✔️ Instalar navegadores Playwright
+`npx playwright install --with-deps`
+Esto instalará Chromium, Firefox y WebKit junto con sus ✔️ dependencias del sistema.
+✔️ Ejecutar pruebas
+Modo normal (single worker)
+`npm test`
+
+Linting, validaciones y herramientas internas
+- Validar reports (estructura JSON)
+`npm run validate:reports`
+- Validar UXMaps (reglas DSL BAM)
+`npm run validate:ux`
+- Validar BMS (metadata de features)
+`npm run bms:validate`
+- Ver árbol AST de metadata BMS
+`npm run lint:tests`
+- Construir el plugin ESLint BAM-UX
+`npm run build:tools`
+
+
+# 9. Preguntas frecuentes (FAQ)
 
 ### ❓ ¿Puede migrarse a Selenium/WebdriverIO/Cypress/X?
 
@@ -625,7 +547,7 @@ Tambien  sirve para actualizarme a mi mismo :)
 
 --- 
 
-#  9. ✅ Alineación con estándares de calidad
+#  10.  Alineación con estándares de calidad
 
 BAM no pretende “certificar” el cumplimiento de normas, pero sí está **diseñado para alinearse** con principios reconocidos como **ISTQB 2023+**, **IEEE 29119** e **ISO/IEC 25010 / 25002**.
 
@@ -644,7 +566,7 @@ A nivel de arquitectura favorece:
 
 > Estos estados reflejan **alineación de diseño**, no una auditoría oficial ni un cumplimiento certificado.
 
-##  10.  🧮 Comparativa de modelos
+##  11.   Comparativa de modelos
 
 | **Criterio**           | **BDD clásico**                         | **POM tradicional**                       | **BAM (PoC Beta)**                                          |
 |------------------------|-----------------------------------------|-------------------------------------------|-------------------------------------------------------------|
@@ -660,7 +582,7 @@ A nivel de arquitectura favorece:
 > La tabla refleja **tendencias arquitectónicas**, no benchmarks de rendimiento.  
 > BAM introduce una capa adicional de estructura a cambio de mayor claridad, trazabilidad y gobernanza.
 
-## 131 Limitaciones del repositorio (Edición "Community")
+## 12 Limitaciones del repositorio (Edición "Community")
 
 Este repositorio publica la **arquitectura conceptual BAM**, ejemplos de features, 
 el estándar BMS y los scripts necesarios para validar la metadata.
@@ -679,70 +601,9 @@ Sin embargo, **no incluye deliberadamente**:
 - Heurísticas de self-healing  
 - Implementación interna del sistema de reporting avanzado  
 
-### ¿Por qué?
+ ## 🚀 Consulta el **Roadmap oficial de BAM**  [ROADMAP.md](./ROADMAP.md)
 
-Porque este repositorio representa la **edición Community**, destinada a:
 
-- Difundir el modelo conceptual BAM  
-- Mostrar capacidad de diseño arquitectónico  
-- Recoger feedback técnico  
-- Facilitar ejemplos de BMS y estructura  
-
-Pero la implementación completa forma parte de la **edición privada**, mantenida en un repositorio privado.
-
-### ¿Qué sí puedes encontrar aquí?
-
-- El estándar BMS (BAM Metadata Standard)  
-- Features Gherkin con ejemplos reales  
-- Scripts de validación (`validate-bms.ts`)  
-- Estructura recomendada de carpetas  
-- Documentación, arquitectura y roadmap  
-- El plugin ESLint BAM UX (ver siguiente sección)  
-
-Esta edición sirve como una **referencia conceptual**, no como framework instalable de producción.
-
-## 11. Roadmap Público
-
-### Fase 1 – Error Handling Enterprise (en progreso)
-- Clasificación de errores (UI / red / estado / selector)
-- Retries inteligentes configurables por entorno
-- Recovery flows básicos
-- Matriz de severidad y fallos tolerables
-- Captura ampliada de contexto en el tracer
-
----
-
-### Fase 2 – Exportadores ALM (en diseño)
-- Xray (mapeo REQ ↔ BMS ↔ ejecución)
-- Zephyr (sincronización bidireccional opcional)
-- TestRail (generación de resultados a partir del JSON)
-- Normalización de estructuras de reporting
-
----
-
-### Fase 3 – Self-Healing controlado (PoC experimental)
-- Heurísticas de estabilidad en componentes
-- Fallbacks de selectores no intrusivos
-- Registro de causas probables (selector, timing, transición)
-- Detección de puntos frágiles a partir de trazas reales
-
----
-
-### Fase 4 – CI Analytics (observabilidad técnica)
-- Hotspot detection (componentes más fallones)
-- Flakiness score por escenario y componente
-- Tendencias temporales de duración y estabilidad
-- Conversión del JSON en dashboards (Grafana / Datadog opcional)
-
----
-
-### Fase 5 – DINO (IA local opcional)
-- Asistente para decorar features Gherkin con metadata BMS
-- Identificación de huecos (requisito → AC → test → ejecución)
-- Análisis de trazas BAM (causas probables + sugerencias)
-- Generación asistida de documentación viva (TestPlan, matriz de cobertura)
-- Operación 100% local (Ollama / LM Studio)
-- Evaluación de calidad del diseño de pruebas (Good/Smell)
 
 ## 12. Contacto
 🧑‍🔬 **Rubén López**  - ruben@rulope.com
