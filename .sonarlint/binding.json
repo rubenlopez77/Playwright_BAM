@@ -1,0 +1,8 @@
+{
+  "connections": {
+    "SonarCloud": {
+      "organizationKey": "rubenlopez77",
+      "projectKey": "rubenlopez77_Playwright_fun"
+    }
+  }
+}

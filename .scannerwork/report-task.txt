@@ -1,0 +1,6 @@
+projectKey=Playwright
+serverUrl=https://sonar.rulope.com
+serverVersion=25.10.0.114319
+dashboardUrl=https://sonar.rulope.com/dashboard?id=Playwright
+ceTaskId=922df654-a5a3-4aaa-b33c-a234921bb265
+ceTaskUrl=https://sonar.rulope.com/api/ce/task?id=922df654-a5a3-4aaa-b33c-a234921bb265
