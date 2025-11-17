@@ -376,11 +376,15 @@ DINO es un asistente para acelerar el trabajo del QA, no una capa mágica ni un 
 ✔️ Instalar dependencias
 
 ```npm install```
+
 ✔️ Instalar navegadores Playwright
 
 `npx playwright install --with-deps`
-Esto instalará Chromium, Firefox y WebKit junto con sus ✔️ dependencias del sistema.
+
+Esto instalará Chromium, Firefox y WebKit junto con sus 
+
 ✔️ Ejecutar pruebas
+
 Modo normal (single worker)
 
 `npm test`
