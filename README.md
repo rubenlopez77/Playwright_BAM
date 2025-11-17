@@ -374,24 +374,32 @@ DINO es un asistente para acelerar el trabajo del QA, no una capa mágica ni un 
 # 8. Getting Started – BAM Community Edition
 
 ✔️ Instalar dependencias
+
 ```npm install```
 ✔️ Instalar navegadores Playwright
+
 `npx playwright install --with-deps`
 Esto instalará Chromium, Firefox y WebKit junto con sus ✔️ dependencias del sistema.
 ✔️ Ejecutar pruebas
 Modo normal (single worker)
+
 `npm test`
 
 Linting, validaciones y herramientas internas
 - Validar reports (estructura JSON)
+
 `npm run validate:reports`
 - Validar UXMaps (reglas DSL BAM)
+
 `npm run validate:ux`
 - Validar BMS (metadata de features)
+
 `npm run bms:validate`
 - Ver árbol AST de metadata BMS
+
 `npm run lint:tests`
 - Construir el plugin ESLint BAM-UX
+
 `npm run build:tools`
 
 
