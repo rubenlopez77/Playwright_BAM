@@ -63,7 +63,7 @@ La Capa de Componentes es el corazón del diseño:
 - Pages declarativas: solo declaran qué componentes contienen.
 - Helpers: orquestan flujos reutilizables (login, navegación, etc.).
 
-  > Aquí se define cómo interactuamos con el sistema, sin contaminar los tests.
+> Aquí se define cómo interactuamos con el sistema, sin contaminar los tests.
 
 
 #### 2.3 Capa de Ejecución (Runner / Orquestación)
@@ -86,17 +86,17 @@ El Component Model garantiza que toda interacción técnica está centralizada.
 
 Cada interacción UI/API se encapsula en un componente o clase:
 
-click, fill, waitFor, modal, alert, llamadas API…
+-  click, fill, waitFor, modal, alert, llamadas API…
 
 Ventajas:
 
-Un selector → un único lugar.
+-  Un selector → un único lugar.
 
-Reutilización masiva.
+-  Reutilización masiva.
 
-Cambios en la UI afectan al mínimo código posible.
+-  Cambios en la UI afectan al mínimo código posible.
 
-Control de errores más preciso (componente, acción, selector).
+-  Control de errores más preciso (componente, acción, selector).
 
 ###  3.2 Pages Declarativas
 Una Page solo declara qué componentes contiene y cómo se combinan. Sin lógica “de negocio”.
