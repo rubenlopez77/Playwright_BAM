@@ -300,7 +300,6 @@ BAM no “certifica” cumplimiento, pero su diseño se alinea con:
 | **IEEE 29119-3**  | 🚧     | Avance hacia IDs/artefactos formales          |
 | **ISO/IEC 25010** | ✅      | Mantenibilidad + analizabilidad               |
 | **ISO/IEC 25002** | ✅      | Base para métricas cuantitativas              |
-| Criterio            | BDD clásico | POM tradicional | **BAM (PoC Beta)**          |
 
 > Estos estados reflejan alineación de diseño, no una auditoría oficial ni una certificación formal.
 
