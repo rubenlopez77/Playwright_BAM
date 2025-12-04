@@ -18,12 +18,15 @@
 Los frameworks de automatización tradicionales comparten tres problemas estructurales:
 
 ❌ Fragilidad: 
+
 Los tests dependen de selectores, lógica repetida y flujos inconsistentes. Tests imperativos, alto acoplamiento y alta deuda.
 
 ❌ Silos de evidencia: 
+
 Playwright genera su reporte, Cucumber otro, k6 otro… sin un estándar común.
 
 ❌ Ausencia de trazabilidad real
+
 No se sabe:
 - Qué requisito cubre cada test
 - Qué AC se ha validado
@@ -31,7 +34,8 @@ No se sabe:
 - Qué componente ha fallado ni por qué
 
 ❌ Desconexión entre negocio y QA
-  Los steps suelen describir cómo se hace algo, no qué se valida.
+
+> Los steps suelen describir cómo se hace algo, no qué se valida.
 
 ## 🟣 Un Single Source of Truth para gobernarlos a todos.
 
