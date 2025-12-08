@@ -1,11 +1,10 @@
-# 🧪 Behavior Annotation Model (BAM!) 
+# 🧪 Behavior Annotation Model (BAM!) — Community Edition (PoC)
 
+> ### ⚠️ Aviso importante — Proof of Concept  
+> Esta edición es un **PoC evolutivo**, creado para explorar cómo podría estructurarse la gobernanza de calidad en automatización según principios **ISTQB**, **IEEE 29119** e **ISO/IEC 25010**.  
+> No pretende ser un framework “cerrado”, sino una **propuesta arquitectónica** para experimentar con diseño declarativo, trazabilidad y telemetría unificada.
 
-> ### ⚠️ Aviso importante — Community Edition (PoC)
-> Esta edición es una **Proof of Concept (PoC)** diseñada para explorar arquitecturas QA alineadas con **ISTQB**, **IEEE 29119** e **ISO/IEC 25010**.
-> Su objetivo es académico y de arquitectura: demostrar la viabilidad de un **Single Source of Truth** en QA.
-
-![BAM Community Edition](https://img.shields.io/badge/BAM_Community_Edition-v0.1.5-blueviolet?logo=testcafe&logoColor=white&style=flat-square)
+![BAM Community Edition](https://img.shields.io/badge/BAM_Community_Edition-v0.1.5-blueviolet?style=flat-square)
 
 ---
 
@@ -13,326 +12,258 @@
 
 ---
 
-## 🎯 Propósito: ¿Por qué BAM?
+# 🎯 1. Propósito: ¿Qué intenta resolver BAM?
 
-Los frameworks de automatización tradicionales comparten tres problemas estructurales:
+BAM nace para explorar cómo un equipo QA podría **gobernar** —no solo ejecutar— la automatización.  
+En la práctica, intenta responder a cuatro problemas habituales:
 
-❌ Fragilidad: 
+### ❌ 1. Falta de fiabilidad  
+Tests frágiles, flaky tests, reintentos, ruido.  
+La suite “verde” en apariencia, pero poco confiable.
 
-Los tests dependen de selectores, lógica repetida y flujos inconsistentes. Tests imperativos, alto acoplamiento y alta deuda.
+### ❌ 2. Evidencia dispersa  
+Playwright genera un tipo de reporte, Cucumber otro, k6 otro.  
+No existe *una única fuente de verdad*.
 
-❌ Silos de evidencia: 
+### ❌ 3. Ausencia de trazabilidad funcional  
+Los frameworks tradicionales no responden a:
 
-Playwright genera su reporte, Cucumber otro, k6 otro… sin un estándar común.
+- Qué requisito cubre cada escenario  
+- Qué AC fueron validados  
+- Qué datos se usaron  
+- Qué módulo o componente falló realmente  
 
-❌ Ausencia de trazabilidad real
+### ❌ 4. Desconexión entre intención de negocio y ejecución técnica  
+Los steps suelen describir *cómo* interactuar con la UI, no *qué comportamiento* se está validando.
 
-No se sabe:
-- Qué requisito cubre cada test
-- Qué AC se ha validado
-- Qué dato se ha usado
-- Qué componente ha fallado ni por qué
+---
 
-❌ Desconexión entre negocio y QA
+# 🟣 2. BAM como modelo: un Single Source of Truth para QA
 
-> Los steps suelen describir cómo se hace algo, no qué se valida.
+BAM propone una visión simple:
 
-## 🟣 Un Single Source of Truth para gobernarlos a todos.
+> **Tests funcionales, API y rendimiento pueden compartir un metamodelo común de evidencias.**
 
-Un ecosistema unificado en el que todas las pruebas —funcionales, API y rendimiento— comparten un metamodelo común de evidencia.
-Ese metamodelo es el BMS (Behavioral Metadata Standard).
+Ese metamodelo es el **BMS (Behavior Metadata Standard)**:  
+un JSON canónico que representa cada ejecución con semántica clara y trazable.
 
->BAM no ejecuta pruebas: gobierna calidad.
+BAM **no es un runner**.  
+BAM no reemplaza Playwright ni Cypress.  
+BAM **gobierna** la estructura, la intención y la telemetría.
 
-## 🏛️ 2. Arquitectura en 3 capas (alineada con ISTQB)
+---
 
-BAM organiza todo el sistema de pruebas en tres capas bien definidas:
+# 🏛️ 3. Arquitectura en 3 capas (alineada con ISTQB)
 
-#### 2.1 Capa de Intención (Business / BDD)
--  Escenarios escritos en Gherkin puro.
--  Metadata BMS vía tags (@ID, @Module, @Risk, @AC1, @Data…).
--  Lenguaje entendible por negocio, QA y desarrollo.
+El diseño se basa en la separación clásica de responsabilidades, pero aplicada con rigor QA:
 
-> Aquí se define qué comportamiento queremos validar.
+---
 
-#### 2.2 Capa de Componentes (Design / Abstracción Técnica)
+## 3.1 Capa de Intención (Business / Declarativa)
 
-La Capa de Componentes es el corazón del diseño:
+- Escenarios legibles por negocio (pseudo-Gherkin).  
+- Metadatos estructurados: `@REQ`, `@AC`, `@Risk`, `@Data`…  
+- Define **qué** se quiere validar, no *cómo*.
 
-- Componentes atómicos: encapsulan selectores e interacciones.
-- Pages declarativas: solo declaran qué componentes contienen.
-- Helpers: orquestan flujos reutilizables (login, navegación, etc.).
+---
 
-> Aquí se define cómo interactuamos con el sistema, sin contaminar los tests.
+## 3.2 Capa de Componentes (Abstracción Técnica)
 
+Una capa totalmente encapsulada:
 
-#### 2.3 Capa de Ejecución (Runner / Orquestación)
+- Componentes UI/API atómicos  
+- Pages declarativas  
+- Helpers reutilizables  
+- Selectores centralizados  
 
-BAM orquesta diferentes motores bajo un mismo estándar:
+> La intención funcional queda aislada de los detalles técnicos.
 
-🖥️ UI: Playwright 
+---
 
-🔌 API: Axios / Playwright API
+## 3.3 Capa de Ejecución (+ Telemetría BMS)
 
-🚀 Performance: k6
+La ejecución la realiza el motor elegido (Playwright, Axios, k6…).  
+BAM solo añade:
 
-> Independientemente del motor (se podría usar Selenium, Cypress, Appium, JMeter, Supertest.. ), el resultado se normaliza en un **BMS JSON común**.
+- trazabilidad,  
+- metadatos,  
+- taxonomía de fallos,  
+- estructura común para todos los tipos de pruebas.  
 
-## 🟦 3. Modelo de Componentes — Eliminando fragilidad estructural
+El resultado es siempre un **BMS JSON** homogéneo.
 
-El Component Model garantiza que toda interacción técnica está centralizada.
+---
 
-###  3.1 Componentes Atómicos
+# 🟦 4. Modelo de Componentes — Eliminando fragilidad
 
-Cada interacción UI/API se encapsula en un componente o clase:
+Los componentes permiten:
 
--  click, fill, waitFor, modal, alert, llamadas API…
+- seleccionar un único lugar para cada selector,  
+- reducir drásticamente deuda técnica,  
+- mejorar DX,  
+- y preparar el camino para estrategias avanzadas (retries, fallbacks, self-healing).
 
-Ventajas:
+Ejemplo simplificado:
 
--  Un selector → un único lugar.
-
--  Reutilización masiva.
-
--  Cambios en la UI afectan al mínimo código posible.
-
--  Control de errores más preciso (componente, acción, selector).
-
-###  3.2 Pages Declarativas
-Una Page solo declara qué componentes contiene y cómo se combinan. Sin lógica “de negocio”.
-
-```typescript
-// Ejemplo de Page Object Declarativo en BAM
-  async loginWith(set: CredentialSet) {
-    await this.loginButton.click();
-    await this.modal.waitVisible();
-    await this.username.fill(set.username);
-    await this.password.fill(set.password);
-    await this.submitButton.click();
-  }
-```
->Esto reduce la deuda técnica y simplifica radicalmente la experiencia de desarrollo (DX).
-
-### 3.3 Steps declarativos → Intención funcional
-El Step representa intención funcional, no detalles técnicos.
-```typescript
-// Test declarativos. Prácticamente Gherkin
-When('the user logs in with invalid credentials', async function () {
-  const user = this.getPage(LoginPage);
-  await user.loginWith(credentials.invalid);
-});
+```ts
+async loginWith(set: CredentialSet) {
+  await this.loginButton.click();
+  await this.modal.waitVisible();
+  await this.username.fill(set.username);
+  await this.password.fill(set.password);
+  await this.submitButton.click();
+}
 ```
 
-✔ Onboarding rápido: Fácil de leer para nuevos miembros.
-✔ Arquitectura modular y determinista.
-✔ Alineado con principios ISTQB (separación por capas, auto-verificación).
-✔ Mejor Developer Experience: tipado estricto, errores claros, logs medibles.
-✔ Performance: lazy loading y control de contexto por escenario.
+---
 
-### 3.5 Robustez y manejo de errores
-✔️ Lo que ya está disponible
-- Cada acción registra: componente, selector, duración, error.
-- El trace JSON es consistente y fácil de analizar.
-- Contexto aislado por escenario.
+# 🧬 5. BMS — Behavioral Metadata Standard
 
-⚠️ Lo que aún NO está implementado
-- Retries inteligentes.
-- Estrategias por entorno.
-- Clasificación de errores.
-- Recovery flows.
-- Severidad técnica.
+Es la pieza clave del modelo BAM.
 
-🔜 Lo que habilita la arquitectura
+### BMS permite responder a:
 
-Como toda la lógica pasa por componentes, es posible implementar:
-- Retries centralizados.
-- Fallbacks por entorno.
-- Manejo de UI volátil.
-- Recuperación de estado.
+- Qué requisito se validó  
+- Qué AC concretos  
+- Qué datos  
+- Qué componentes intervinieron  
+- Qué falló y por qué (taxonomía)  
+- Cuánto duró  
+- Qué evidencias se generaron
 
-➡️ T**odo sin modificar tests.**
+### Ejemplo simplificado:
 
-## 🧬 4. BMS — Behavioral Metadata Standard
-La pieza que permite trazabilidad completa
-
-Los escenarios Gherkin incluyen metadata estructurada y auditable:
-```gherkin
-@ID=TC-002
-@Title=Valid_login_shows_username
-@Module=Authentication
-@Component=Login
-@AC1=Welcome_message_includes_username
-@Data=credentials.valid
-@Priority=HIGH
-@Risk=LOW
-Scenario: Successful login
-```
-
-BMS resuelve:
-- Qué requisito cubre cada test
-- Qué criterios de aceptación se validan.
-- Qué datos se usaron
-- Qué se ejecutó realmente y dónde falló.
-
-### 4.1 Ejemplo SIMPLIFCADO de salida JSON 
 ```json
 {
   "metadata": {
     "id": "TC-002",
-    "title": "Valid_login_shows_username",
-    "module": "Authentication",
-    "component": "Login",
-    "priority": "HIGH",
+    "requirements": ["AUTH-101"],
     "risk": "LOW",
-    "acceptanceCriteria": [
-      "Welcome_message_includes_username",
-      "Login_modal_should_disappear_after_success"
-    ],
-    "requirements": ["AUTH-101"]
+    "acceptanceCriteria": ["Welcome_message_includes_username"]
   },
   "execution": {
     "status": "PASSED",
-    "durationMs": 2450,
-    "steps": [
-      { "component": "Navigation", "action": "openHomePage", "status": "PASSED" },
-      { "component": "Login", "action": "loginWith", "status": "PASSED" }
-    ]
+    "durationMs": 2450
   }
 }
-
 ```
 
-### 4.2 Governance BMS (cómo escala en equipos grandes)
+### Relación con ALM (JIRA, Xray, Zephyr)
 
-**Naming conventions**
-- @ID = prefijo + número.
-- @REQ = ID de requisito (JIRA / ALM).
-- Módulos y componentes definidos por equipo.
+Actualmente:  
+- tags libres `@REQ=AUTH-101`  
+- validación local de formato  
 
-**Roles responsables**
+Roadmap (PoC):  
+- exporters,  
+- validadores externos,  
+- sincronización ligera.
 
-- QA Lead / QA Architect definen convenciones.
-- Cambios controlados por PR.
-- Evolución gradual del estándar.
-- Evolución gradual del estándar.
+---
 
-### 4.3 Validador BMS (CI/CD)
+# 📊 6. Reporting y BAM Radar
 
-Los scripts de validación (/scripts/validate-bms.ts) pueden:
-- Bloquear merges si la metadata es incorrecta.
-- Comprobar formato y campos obligatorios.
-- Detectar duplicados de ID.
-- Verificar coherencia de prioridades y riesgos.
+BAM Radar es un experimento de dashboard local (en desarrollo) que consume BMS para:
 
-### 4.4 Relación con JIRA/ALM
+- detectar flaky tests,  
+- encontrar requisitos “verde pero débiles”,  
+- visualizar métricas temporales,  
+- ayudar en Root Cause Analysis.  
 
-En la versión actual:
-- @REQ es un string libre que puede mapear a JIRA/Xray/Zephyr.
-- Validación posible vía ficheros locales o convenciones de equipo.
-- Exporters formales (JIRA, Xray, Zephyr) → en desarrollo.
+> Objetivo: ayudar a un QA Lead a **gobernar la suite**, no solo visualizarla.
 
->No se promete una integración que aún no existe, pero la arquitectura ya está preparada para ello.
+---
 
-### 📊 5. Reporting — Claro para negocio y técnico
+# 🚦 7. Quality Gates (PoC)
 
-El reporting parte de:
-- Metadata BMS.
-- Trace técnico.
-- Pasos ejecutados.
-- Duración.
-- Componente / acción.
-- Resultado y errores.
+Ejemplos posibles:
 
-Esto permite construir:
+| Gate               | Regla                     |
+| ------------------ | ------------------------- |
+| Stability Gate     | 0% flaky tests            |
+| Perf Gate          | p95 < umbral definido     |
+| Risk Gate          | Criticidad 100% cubierta  |
 
-- Informes funcionales para negocio.
-- Informes técnicos para QA/Dev.
-- Exportadores ALM.
-- Dashboards (BAM Radar).
-- Métricas de cobertura y riesgo.
+---
 
-Y todo esto unificado.
+# 🔧 8. Estado actual del PoC
 
-## 🚦 6. Quality Gates (CI/CD)
+| Área                          | Estado         |
+| ----------------------------- | -------------- |
+| Arquitectura base             | ✔️ Estable     |
+| BMS Standard                  | ✔️ Operativo   |
+| Component Model               | ✔️ Estable     |
+| Dual Reporting JSON           | ✔️ Activo      |
+| BAM Radar                     | 🚧 En desarrollo |
+| Error Taxonomy avanzado       | 🚧 Parcial     |
+| Exporters ALM                 | 🚧 Roadmap     |
+| Self-Healing                  | 🔜 Futura fase |
 
-| Gate               | Regla               | Acción                |
-| ------------------ | ------------------- | --------------------- |
-| **Smoke Gate**     | 100% Critical Flows | 🟢 Deploy QA          |
-| **Perf Gate**      | p95 < 200ms         | 🟡 Warning / 🔴 Block |
-| **Stability Gate** | 0% flaky tests      | 🔴 Block release      |
+---
 
-Es posible definir reglas personalizadas de quality gate en el pipeline de CI/CD
+# 🦕 9. DINO (Opcional): IA Declarativa
 
-## 🔧 7. Estado actual
-| Área                      | Estado           |
-| ------------------------- | ---------------- |
-| Arquitectura base         | ✔️ Estable       |
-| BMS Standard              | ✅ Completo       |
-| Component Model           | ✔️ Estable       |
-| Dual Reporting (JSON)     | ✔️ Estable       |
-| BAM Radar (Dashboard Gobernanza) | ⚠️ En desarrollo |
-| Error Handling Enterprise | ⚠️ En desarrollo |
-| Exporters ALM             | ⚠️ Roadmap       |
-| Self-Healing              | 🔜 Próxima fase  |
+Proyecto complementario (PoC) cuyo objetivo es permitir:
 
-## 🦕 8. DINO — IA Declarativa para potenciar BAM (opcional)
+- sugerencia de escenarios,  
+- validación de metadata BMS,  
+- análisis de patrones de error,  
+- explicabilidad técnica.
 
-**DINO** (Declarative Intelligence Orchestration) es un proyecto complementario a BAM, aún en fase inicial (PoC).
+No forma parte del core BAM actual.
 
-- 🚧 Estado: fase inicial.
-- 🧠 Foco: modelos locales (Ollama, LM Studio).
-- 💬 Rol: asistencia, no sustitución del QA.
-- 🔒 Privacidad: no envía datos a la nube.
+---
 
-Objetivo: automatizar tareas repetitivas alrededor de BAM:
-- Generación de escenarios.
-- Generación/validación de metadata BMS.
-- Análisis de errores.
-- Sugerencia de nuevos casos.
+# 📏 10. Alineación con estándares de calidad
+
+BAM no “certifica” cumplimiento, pero su diseño se inspira en los principios de varios marcos reconocidos:
+
+| Norma / Marco     | Estado | Alineación                                                                 |
+| ----------------- | ------ | --------------------------------------------------------------------------- |
+| **ISTQB 2023+**   | ✅     | Separación por capas, mantenibilidad, diseño declarativo, autochecking      |
+| **IEEE 29119-3**  | 🚧     | Avance hacia IDs formales, trazabilidad estructurada y artefactos controlados |
+| **ISO/IEC 25010** | ✅     | Mantenibilidad, analizabilidad, estructura modular                          |
+| **ISO/IEC 25002** | ✅     | Base para métricas cuantitativas y criterios de evaluación                  |
 
 
-## 📏 9. Alineación con estándares de calidad
+---
 
-BAM no “certifica” cumplimiento, pero su diseño se alinea con:
-| Norma / Marco     | Estado | Alineación                                    |
-| ----------------- | ------ | --------------------------------------------- |
-| **ISTQB 2023+**   | ✅      | Capas separadas, autochecking, mantenibilidad |
-| **IEEE 29119-3**  | 🚧     | Avance hacia IDs/artefactos formales          |
-| **ISO/IEC 25010** | ✅      | Mantenibilidad + analizabilidad               |
-| **ISO/IEC 25002** | ✅      | Base para métricas cuantitativas              |
+# ⚔️ 11. Comparativa de modelos
 
-> Estos estados reflejan alineación de diseño, no una auditoría oficial ni una certificación formal.
-
-## ⚔️ 10. Comparativa de modelos
-| Criterio            | BDD clásico                | POM tradicional         | **BAM (PoC Beta)**                                 |
-| ------------------- | -------------------------- | ----------------------- | -------------------------------------------------- |
-| Trazabilidad        | ⚙️ Buena (escenarios)      | ❌ Limitada (UI técnica) | ✅ Alta (BMS: requisito ↔ escenario ↔ ejecución)    |
-| Mantenibilidad      | ❌ Media/Baja (“step hell”) | ✅ Buena (BOs claros)    | ✅ Alta (componentes atómicos + pages declarativas) |
-| Velocidad           | ❌ Menor (overhead BDD)     | ✅ Alta                  | ⚙️ Media (capa extra + trazas)                     |
-| Visibilidad negocio | ✅ Alta                     | ❌ Baja                  | ✅ Alta (Gherkin + metadata BMS)                    |
-| Deuda técnica       | ❌ Alta                     | ⚙️ Media                | ✅ Reducida (selectores en componentes)             |
-| Compatibilidad IA   | ✅ Buena                    | ❌ Baja                  | ⚙️ Muy buena (estructura clara para DINO)          |
-| Escalabilidad       | ⚙️ Media                   | ✅ Buena                 | ✅ Alta (component model + BMS + reporting)         |
-| Observabilidad      | ❌ Baja                     | ❌ Baja                  | ✅ Mejorada (logger + tracer JSON integrados)       |
+| Criterio              | BDD clásico              | POM tradicional          | **BAM (PoC)**                                           |
+| --------------------- | ------------------------ | ------------------------ | -------------------------------------------------------- |
+| **Trazabilidad**      | ⚙️ Media                 | ❌ Baja                  | ✅ Alta (BMS: requisito ↔ escenario ↔ ejecución)          |
+| **Mantenibilidad**    | ❌ Media/Baja (“step hell”) | ⚙️ Media/Alta           | ✅ Muy alta (componentes atómicos + pages declarativas)  |
+| **Ruido / Fragilidad**| ❌ Alta                  | ⚙️ Media                 | 🟢 Baja (interacciones centralizadas)                    |
+| **Observabilidad**    | ❌ Baja                  | ❌ Baja                  | 🟦 Alta (JSON estructurado + taxonomía de fallos)        |
+| **Compatibilidad IA** | ⚙️ Media                | ❌ Baja                  | 🤖 Alta (estructura declarativa + metadatos BMS)         |
+| **Escalabilidad**     | ⚙️ Media                | ⚙️ Media/Alta            | 🟢 Alta (arquitectura en 3 capas + estandarización)      |
+| **Experiencia QA Lead**| ⚙️ Variable             | ⚙️ Buen control técnico  | ⭐ Excelente (gobernanza, métricas, raíz de fallos clara) |
 
 
+---
 
-🧩 11. Flujo Completo (Arquitectura)
-Gherkin (Intención de negocio)
+# 🧩 12. Flujo completo (visión conceptual)
+
+```
+Intención (pseudo-Gherkin)
        ↓
-Capa de Componentes y Pages (Modelo de diseño)
+Componentes / Pages
        ↓
-BAM Runner — Playwright / Axios / k6 (Ejecución)
+Ejecución Playwright / Axios / k6
        ↓
-BMS JSON v2.1 (Single Source of Truth)
+BMS JSON (Single Source of Truth)
        ↓
 Quality Gates (CI/CD)
        ↓
-BAM Radar (Reporting unificado para negocio y técnico)
+BAM Radar (Gobernanza)
+```
 
+---
 
+# 🧑‍🔬 Contacto
 
-## 🧑‍🔬 Contacto
-**Rubén López**  - ruben@rulope.com
-[GitHub](https://github.com/rubenlopez77) 
-[LinkedIn](https://www.linkedin.com/in/ruben-lopez-qa/)
+**Rubén López**  
+ruben@rulope.com  
+GitHub: https://github.com/rubenlopez77  
+LinkedIn: https://www.linkedin.com/in/ruben-lopez-qa/
