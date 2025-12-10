@@ -96,24 +96,59 @@ El resultado es siempre un **BMS JSON** homogéneo.
 
 # 🟦 4. Modelo de Componentes — Eliminando fragilidad
 
-Los componentes permiten:
 
-- seleccionar un único lugar para cada selector,  
-- reducir drásticamente deuda técnica,  
-- mejorar DX,  
-- y preparar el camino para estrategias avanzadas (retries, fallbacks, self-healing).
+🟦 Componentes atómicos
 
-Ejemplo simplificado:
-
+Cada interacción (click, fill, wait, modal, alert…) se centraliza en un componente o clase.
 ```ts
-async loginWith(set: CredentialSet) {
-  await this.loginButton.click();
-  await this.modal.waitVisible();
-  await this.username.fill(set.username);
-  await this.password.fill(set.password);
-  await this.submitButton.click();
+async fill(value: string) {
+    return this.world.interactionService.run(
+      "Textbox.fill",
+      { selector: this.selector, value },
+      async () => {
+        await this.loc.waitFor({ state: "visible" });
+        await this.loc.click();
+        await this.loc.fill(value);
+        await this.page.waitForLoadState("domcontentloaded");
+      }
+    );
+  }
+```
+Ventajas:
+
+Un selector → un único lugar
+Reutilización masiva
+Cambios UI afectan al mínimo código posible
+Control de errores
+
+🟦 Pages declarativas
+
+Una página solo indica qué componentes contiene.
+Sin lógica técnica.
+```ts
+loginWith(set: CredentialSet) {
+  this.loginButton.click();
+  this.modal.waitVisible();
+  this.username.fill(set.username);
+  this.password.fill(set.password);
+  this.submitButton.click();
 }
 ```
+
+🟦 Steps declarativos y limpios
+
+El Step representa intención funcional:
+```ts
+When('the user logs in with valid credentials', function () {
+  const user = this.getPage(LoginPage);
+  user.loginWith(credentials.valid);
+});
+```
+✔ Arquitectura modular y determinista.
+✔ Alineado con principios ISTQB: separación por capas y auto-verificación
+✔ Developer Experience: tipado estricto, errores claros y logs medibles
+✔ Performance: lazy loading y control de contexto por escenario
+
 
 ---
 
