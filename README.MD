@@ -82,7 +82,7 @@ El motor (Playwright, Axios, k6) ejecuta la acción. BAM intercepta la ejecució
 
 ---
 
-# 🟦 5. Eliminando fragilidad
+#  Eliminando fragilidad
 
 ### 🟦 Componentes Atómicos (Interaction Wrapper)
 Cada interacción (click, fill, wait) se centraliza para inyectar estabilidad y telemetría automática.
