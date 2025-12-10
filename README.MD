@@ -126,13 +126,13 @@ Control de errores
 Una página solo indica qué componentes contiene.
 Sin lógica técnica.
 ```ts
-loginWith(set: CredentialSet) {
-  this.loginButton.click();
-  this.modal.waitVisible();
-  this.username.fill(set.username);
-  this.password.fill(set.password);
-  this.submitButton.click();
-}
+  async loginWith(set: CredentialSet) {
+    await this.loginButton.click();
+    await this.modal.waitVisible();
+    await this.username.fill(set.username);
+    await this.password.fill(set.password);
+    await this.submitButton.click();
+  }
 ```
 
 🟦 Steps declarativos y limpios
