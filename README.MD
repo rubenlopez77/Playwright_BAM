@@ -109,7 +109,7 @@ Una página solo declara qué componentes tiene, no cómo funcionan.
 
 Steps Limpios (Intent-First)
 
-🧬 5. BMS — Behavioral Metadata Standard
+# 🧬 5. BMS — Behavioral Metadata Standard
 
 Es la pieza clave del modelo BAM.
 BMS permite responder a:
