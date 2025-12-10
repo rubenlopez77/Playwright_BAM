@@ -110,11 +110,11 @@ Sin lógica técnica.
 
 ```ts
 loginWith(set: CredentialSet) {
-  this.loginButton.click();
-  this.modal.waitVisible();
-  this.username.fill(set.username);
-  this.password.fill(set.password);
-  this.submitButton.click();
+  await this.loginButton.click();
+  await this.modal.waitVisible();
+  await this.username.fill(set.username);
+  await this.password.fill(set.password);
+  await this.submitButton.click();
 }
 ```
 
@@ -124,7 +124,7 @@ El Step representa intención funcional:
 ``` ts
 When('the user logs in with valid credentials', function () {
   const user = this.getPage(LoginPage);
-  user.loginWith(credentials.valid);
+  await user.loginWith(credentials.valid);
 });
 ```
 
