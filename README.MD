@@ -103,11 +103,48 @@ async fill(value: string) {
 
 ```
 
-🟦 Pages Declarativas (Composition over Inheritance)
+## 🟦 Pages declarativas
 
-Una página solo declara qué componentes tiene, no cómo funcionan.
+Una página solo indica qué componentes contiene.
+Sin lógica técnica.
 
-Steps Limpios (Intent-First)
+```ts
+loginWith(set: CredentialSet) {
+  this.loginButton.click();
+  this.modal.waitVisible();
+  this.username.fill(set.username);
+  this.password.fill(set.password);
+  this.submitButton.click();
+}
+```
+
+### 🟦 Steps declarativos y limpios
+
+El Step representa intención funcional:
+``` ts
+When('the user logs in with valid credentials', function () {
+  const user = this.getPage(LoginPage);
+  user.loginWith(credentials.valid);
+});
+```
+
+✔ Arquitectura modular y determinista.
+
+✔ Alineado con principios ISTQB: separación por capas y auto-verificación 
+
+✔ Developer Experience: tipado estricto, errores claros y logs medibles  
+
+✔ Performance: lazy loading y control de contexto por escenario
+
+### 🟦 Onboarding inmediato
+
+Nuevos miembros solo deben conocer:
+
+- Componentes
+- Páginas
+- Steps declarativos
+
+No necesitan entender lógica interna.
 
 # 🧬 5. BMS — Behavioral Metadata Standard
 
