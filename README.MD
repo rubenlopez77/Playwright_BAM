@@ -191,21 +191,6 @@ BAM está diseñado para la realidad de los equipos, no para laboratorios. Permi
 
 - Fase 3 (Gobernanza): Despliegue de Quality Gates basados en datos (e.g., "Bloquear release si Risk Coverage < 80%")
 
-### 7.1 Beneficios esperados (visión de KPIs)
-Los objetivos típicos al aplicar BAM son:
-· Reducción del ruido por flaky tests
-
-Objetivo: 30–50% menos tiempo en investigar falsos positivos.
-· Mejor trazabilidad requisito ↔ prueba ↔ fallo
-
-Objetivo: trazabilidad cercana al 100% en módulos críticos.
-· RCA más rápido y accionable
-
-Objetivo: reducción del 30–40% en tiempo medio de análisis.
-· Suites más mantenibles y escalables
-
-Gracias a tests declarativos + arquitectura 3 capas, independientemente de la herramienta 
-subyacente
 
 # 🤖 8. AI-Ready por Diseño
 
