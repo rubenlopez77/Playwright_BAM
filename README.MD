@@ -1,4 +1,4 @@
-# 🧪 BAM! (Behavior Annotation Model) — Community Edition (PoC)
+# 🧪 BAM! (Behavior Annotation Model) Exploring structured automation with full traceability
 
 > ### ⚠️ Aviso importante — Proof of Concept
 > Esta edición es un **PoC evolutivo**, creado para explorar cómo podría estructurarse la gobernanza de calidad en automatización según principios **ISTQB**, **IEEE 29119** e **ISO/IEC 25010**.
@@ -14,7 +14,14 @@
 
 # 🎯 1. Propósito: ¿Qué intenta resolver BAM?
 
-BAM nace para explorar cómo un equipo QA podría **gobernar** —no solo ejecutar— la automatización. En la práctica, ataca cuatro disfunciones habituales en equipos Agile:
+Es un experimento personal para probar ideas de:
+- Arquitectura en 3 capas (Intent → Design → Execution)
+- Metadata standard para unificar evidencias (UI + API + Performance)
+- Quality gates basados en datos estructurados
+
+No es un framework comercial ni pretende serlo. Es investigación práctica.
+
+En la práctica, ataca cuatro disfunciones habituales en equipos Agile:
 
 ### ❌ 1. Falta de fiabilidad (Flakiness)
 Tests frágiles, reintentos infinitos y ruido. La suite está "verde", pero nadie confía en ella para desplegar un viernes.
