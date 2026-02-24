@@ -5,6 +5,7 @@
 > It is primarily an academic / architectural demo: validating the feasibility of a **Single Source of Truth** approach for QA evidence.
 
 ![BAM Community Edition](https://img.shields.io/badge/BAM_Community_Edition-v0.1.5-blueviolet?style=flat-square) ![Status](https://img.shields.io/badge/Status-Experimental-orange?style=flat-square) ![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
+![BAM Community Edition](https://img.shields.io/badge/BAM_Community_Edition-v0.1.5-blueviolet?style=flat-square) ![Status](https://img.shields.io/badge/Status-Experimental-orange?style=flat-square) ![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
 
 ---
 
