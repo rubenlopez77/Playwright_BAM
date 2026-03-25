@@ -4,5 +4,11 @@ playwright-report/
 cucumber-report.html
 blob-report/
 playwright/.cache/
-
+.agents
 .DS_Store
+.sonarlint
+
+
+
+#Ignore vscode AI rules
+.github\instructions\codacy.instructions.md

@@ -11,9 +11,9 @@ export class TodoItemComponent extends BaseComponent {
 
     constructor(page: Page, world: CustomWorld, locator: Locator) {
         super(page, world, locator);
-        this.toggleLocator = this.locator.locator(TodoLocators.TOGGLE);
-        this.destroyLocator = this.locator.locator(TodoLocators.DESTROY);
-        this.labelLocator = this.locator.locator(TodoLocators.LABEL);
+        this.toggleLocator = this.locator.locator(TodoLocators.TOGGLE.selector);
+        this.destroyLocator = this.locator.locator(TodoLocators.DESTROY.selector);
+        this.labelLocator = this.locator.locator(TodoLocators.LABEL.selector);
     }
 
     async toggle() {
@@ -28,10 +28,9 @@ export class TodoItemComponent extends BaseComponent {
         await expect(this.toggleLocator).toBeChecked();
     }
 
-    // TodoMVC: the ".destroy" button is revealed only on hover.
-    // We hover first to make the element interactable and reduce flakiness.
     async delete() {
         await this.locator.hover();
+        await expect(this.destroyLocator).toBeVisible();
         await this.destroyLocator.click();
     }
 

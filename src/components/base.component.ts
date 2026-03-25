@@ -11,8 +11,9 @@
  * logging code inside steps.
  */
 
-import { Locator, Page, expect } from '@playwright/test';
+import { Locator, Page, expect } from 'playwright/test';
 import { CustomWorld } from '../support/world';
+import { UiElementDefinition } from '../ux/ux.types';
 
 export abstract class BaseComponent {
     protected locator: Locator;
@@ -20,13 +21,18 @@ export abstract class BaseComponent {
     constructor(
         protected page: Page,
         protected world: CustomWorld,
-        selector: string | Locator
+        target: UiElementDefinition | Locator
     ) {
-        if (typeof selector === 'string') {
-            this.locator = page.locator(selector);
-        } else {
-            this.locator = selector;
+        if (this.isUiElementDefinition(target)) {
+            this.locator = page.locator(target.selector);
+            return;
         }
+
+        this.locator = target;
+    }
+
+    private isUiElementDefinition(target: UiElementDefinition | Locator): target is UiElementDefinition {
+        return 'selector' in target;
     }
 
     async isVisible(): Promise<boolean> {
@@ -43,23 +49,5 @@ export abstract class BaseComponent {
 
     async waitReady() {
         await this.locator.waitFor({ state: 'visible' });
-    }
-
-    async navigate(url: string, options?: { waitUntil?: 'load' | 'domcontentloaded' | 'networkidle' }) {
-        await this.page.goto(url, options);
-        await this.waitForDomReady();
-    }
-
-    async reload(options?: { waitUntil?: 'load' | 'domcontentloaded' | 'networkidle' }) {
-        await this.page.reload(options);
-        await this.waitForDomReady();
-    }
-
-    async waitForDomReady() {
-        await this.page.waitForLoadState('domcontentloaded');
-    }
-
-    async waitForNetworkIdle() {
-        await this.page.waitForLoadState('networkidle');
     }
 }

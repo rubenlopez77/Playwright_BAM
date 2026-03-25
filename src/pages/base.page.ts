@@ -1,22 +1,22 @@
-import { Page } from '@playwright/test';
+import { Page } from 'playwright/test';
 import { CustomWorld } from '../support/world';
+import { NavigationComponent } from '../components/navigation.component';
 
 export abstract class BasePage {
+  protected readonly navigation: NavigationComponent;
+
   constructor(
     protected readonly page: Page,
     protected readonly world: CustomWorld
-  ) { }
+  ) {
+    this.navigation = new NavigationComponent(page, world);
+  }
 
   protected async goto(url: string): Promise<void> {
-    await this.page.goto(url);
-    await this.waitForNetworkIdle();
+    await this.navigation.goto(url);
   }
 
-  protected async waitForDomReady(): Promise<void> {
-    await this.page.waitForLoadState('domcontentloaded');
-  }
-
-  protected async waitForNetworkIdle(): Promise<void> {
-    await this.page.waitForLoadState('networkidle');
+  async reload(): Promise<void> {
+    await this.navigation.reload();
   }
 }

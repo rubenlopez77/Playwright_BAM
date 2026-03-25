@@ -2,24 +2,21 @@ import { Page } from '@playwright/test';
 import { CustomWorld } from '../support/world';
 import { TodoLocators } from '../ux/todo.ux';
 import { TextboxComponent } from '../components/textbox.component';
-import { ButtonComponent } from '../components/button.component';
 import { TextComponent } from '../components/text.component';
 import { TodoListComponent } from '../components/todo-list.component';
-import { BaseComponent } from '../components/base.component';
+import { BasePage } from './base.page';
 
-export class TodoPage extends BaseComponent {
+export class TodoPage extends BasePage {
     private readonly inputBox: TextboxComponent;
     private readonly todoItems: TodoListComponent;
     private readonly todoCount: TextComponent;
-    private readonly clearCompletedButton: ButtonComponent;
 
     constructor(page: Page, world: CustomWorld) {
-        super(page, world, 'html');
+        super(page, world);
 
         this.inputBox = new TextboxComponent(page, world, TodoLocators.INPUT_BOX);
         this.todoItems = new TodoListComponent(page, world, TodoLocators.TODO_ITEMS);
         this.todoCount = new TextComponent(page, world, TodoLocators.TODO_COUNT);
-        this.clearCompletedButton = new ButtonComponent(page, world, TodoLocators.CLEAR_COMPLETED);
     }
 
     async addTask(text: string) {
@@ -28,8 +25,7 @@ export class TodoPage extends BaseComponent {
     }
 
     async completeTask(text: string) {
-        const item = await this.todoItems.getItemByText(text);
-        await item.toggle();
+        await this.todoItems.completeItem(text);
     }
 
     async verifyExpectedText(text: string) {
@@ -37,8 +33,7 @@ export class TodoPage extends BaseComponent {
     }
 
     async verifyTaskCompleted(text: string) {
-        const item = await this.todoItems.getItemByText(text);
-        await item.expectCompleted();
+        await this.todoItems.verifyItemCompleted(text);
     }
 
     async deleteAllTasks() {

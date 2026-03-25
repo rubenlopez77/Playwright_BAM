@@ -9,8 +9,4 @@ export class TextComponent extends BaseComponent {
     async expectCount(count: number) {
         await expect(this.locator).toHaveCount(count);
     }
-
-    getLocator() {
-        return this.locator;
-    }
 }

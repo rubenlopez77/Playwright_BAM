@@ -1,4 +1,4 @@
-import { Page } from '@playwright/test';
+import { Page } from 'playwright/test';
 import { CustomWorld } from '../support/world';
 import { BasePage } from './base.page';
 import { TextboxComponent } from '../components/textbox.component';
