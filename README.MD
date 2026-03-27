@@ -195,7 +195,6 @@ Although this demo uses Playwright for the UI runner, BAM is tool-agnostic and n
 
 ## Author
 
-Rubén López  
-ruben@rulope.com  
+Rubén López  ruben@rulope.com  
 GitHub: https://github.com/rubenlopez77  
 LinkedIn: https://www.linkedin.com/in/ruben-lopez-qa/
